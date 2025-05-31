@@ -1,0 +1,15 @@
+To install SB Admin 2, download the template from:
+https://startbootstrap.com/theme/sb-admin-2
+
+Extract the files to this directory, ensuring the following structure:
+- public/sbadmin2/css/
+- public/sbadmin2/js/
+- public/sbadmin2/vendor/
+- public/sbadmin2/img/
+
+Or run the following commands from the project root:
+1. npm install startbootstrap-sb-admin-2
+2. cp -r node_modules/startbootstrap-sb-admin-2/css public/sbadmin2/
+3. cp -r node_modules/startbootstrap-sb-admin-2/js public/sbadmin2/
+4. cp -r node_modules/startbootstrap-sb-admin-2/vendor public/sbadmin2/ 
+5. cp -r node_modules/startbootstrap-sb-admin-2/img public/sbadmin2/

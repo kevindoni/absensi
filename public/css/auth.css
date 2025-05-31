@@ -1,0 +1,83 @@
+/* Common authentication styles */
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* User badge styling */
+.user-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* Warm orange theme for parent login (softer) */
+body.theme-orangtua {
+    background-color: #f8a854;
+    background-image: linear-gradient(180deg, #f8a854 10%, #e69341 100%);
+}
+
+body.theme-orangtua .btn-primary {
+    background-color: #f8a854;
+    border-color: #f8a854;
+}
+
+body.theme-orangtua .btn-primary:hover {
+    background-color: #e69341;
+    border-color: #d88a3d;
+}
+
+/* Soft blue theme for guru login */
+body.theme-guru {
+    background-color: #6c8fda;
+    background-image: linear-gradient(180deg, #6c8fda 10%, #5476c7 100%);
+}
+
+body.theme-guru .btn-primary {
+    background-color: #6c8fda;
+    border-color: #6c8fda;
+}
+
+body.theme-guru .btn-primary:hover {
+    background-color: #5476c7;
+    border-color: #4a6aba;
+}
+
+/* Gentle teal theme for siswa login */
+body.theme-siswa {
+    background-color: #5ac8d8;
+    background-image: linear-gradient(180deg, #5ac8d8 10%, #46b0bf 100%);
+}
+
+body.theme-siswa .btn-primary {
+    background-color: #5ac8d8;
+    border-color: #5ac8d8;
+}
+
+body.theme-siswa .btn-primary:hover {
+    background-color: #46b0bf;
+    border-color: #3ea1ae;
+}
+
+/* Muted red theme for admin login */
+body.theme-admin {
+    background-color: #e27a70;
+    background-image: linear-gradient(180deg, #e27a70 10%, #d1665c 100%);
+}
+
+body.theme-admin .btn-primary {
+    background-color: #e27a70;
+    border-color: #e27a70;
+}
+
+body.theme-admin .btn-primary:hover {
+    background-color: #d1665c;
+    border-color: #c55b51;
+}
