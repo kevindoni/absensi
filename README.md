@@ -37,6 +37,13 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - Informasi real-time tentang status absensi.
 - Notifikasi untuk ketidakhadiran tanpa keterangan.
 
+### 6. Notifikasi WhatsApp
+- Notifikasi otomatis ke orang tua saat anak tidak hadir.
+- Template pesan yang dapat dikustomisasi.
+- Manajemen koneksi WhatsApp melalui QR Code.
+- Sistem antrian untuk pengiriman pesan massal.
+- Validasi nomor WhatsApp dengan format Indonesia.
+
 ## Struktur Sistem
 
 ### 1. Modul Admin/Superadmin
@@ -63,8 +70,9 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 
 ### 4. Modul Orang Tua
 - Pemantauan kehadiran anak.
-- Notifikasi ketidakhadiran.
+- Notifikasi WhatsApp otomatis ketidakhadiran.
 - Riwayat absensi lengkap dengan keterangan.
+- Dashboard dengan informasi kehadiran terkini.
 
 ## Teknologi yang Digunakan
 
@@ -72,8 +80,9 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - **Framework**: Laravel 11.x
 - **Database**: MySQL 8.0
 - **Authentication**: Multi-Guard Authentication
-- **Queue**: Database/Redis (untuk notifikasi)
+- **Queue**: Database/Redis (untuk notifikasi WhatsApp)
 - **Cache**: File/Redis (untuk optimasi performa)
+- **WhatsApp API**: Baileys (Node.js WhatsApp Web API)
 
 ### Frontend
 - **Template**: SB Admin 2 (Bootstrap 4)
@@ -90,6 +99,8 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - **Image Processing**: `intervention/image`
 - **Notifications**: Laravel built-in notifications
 - **DataTables**: `yajra/laravel-datatables`
+- **WhatsApp Integration**: Baileys WhatsApp Web API
+- **Queue System**: Laravel Queue untuk WhatsApp messaging
 
 ### Development Tools
 - **Package Manager**: Composer (PHP), NPM (JavaScript)
@@ -179,6 +190,9 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - ✅ Monitoring & Laporan
 - ✅ Pengaturan sistem validasi QR Code
 - ✅ Pengaturan toleransi keterlambatan
+- ✅ Manajemen WhatsApp (koneksi, template, pengaturan)
+- ✅ Notifikasi WhatsApp otomatis untuk orang tua
+- ✅ Template pesan WhatsApp yang dapat dikustomisasi
 
 ### Guru
 - ✅ Lihat jadwal mengajar
@@ -197,14 +211,15 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - ✅ Riwayat kehadiran pribadi
 - ✅ Dashboard dengan statistik kehadiran
 - ✅ Izin online system
-- ❌ Lihat jadwal pribadi
+- ✅ Lihat jadwal pribadi
 
 ### Orang Tua
 - ✅ Dashboard dengan notifikasi
 - ✅ Sistem notifikasi terintegrasi
-- ❌ Lihat data anak detail
-- ❌ Riwayat kehadiran anak lengkap
-- ❌ Notifikasi real-time ketidakhadiran
+- ✅ Notifikasi WhatsApp otomatis untuk ketidakhadiran
+- ✅ Lihat data anak detail
+- ✅ Riwayat kehadiran anak lengkap
+- ✅ Notifikasi real-time ketidakhadiran
 
 ### Fitur Validasi dan Keamanan
 - ✅ Time-based QR Scan Window (QR valid sesuai jadwal)
@@ -212,14 +227,17 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - ✅ Batasan keterlambatan (konfigurasi menit)
 - ✅ Sistem toleransi keterlambatan
 - ✅ Validasi QR Code berdasarkan tahun ajaran aktif
-- ❌ Notifikasi WhatsApp/Email otomatis
-- ❌ Integrasi layanan pesan eksternal
+- ✅ Notifikasi WhatsApp otomatis untuk orang tua
+- ✅ Integrasi layanan pesan WhatsApp dengan Baileys
+- ✅ Template pesan WhatsApp yang dapat dikustomisasi
+- ✅ Manajemen koneksi WhatsApp melalui QR Code
+- ✅ Sistem antrian untuk pengiriman pesan WhatsApp
 
 ## Status Aturan Bisnis
 - ✅ Absensi siswa hanya pada jam pelajaran aktif
 - ✅ QR code hanya berlaku untuk jadwal yang sudah ditentukan
 - ✅ Batasan maksimal keterlambatan (konfigurasi menit)
-- ❌ Batasan waktu edit absensi untuk guru (24 jam)
+- ✅ Batasan waktu edit absensi untuk guru (24 jam)
 - ✅ Check-in dan check-out guru
 - ✅ Reset QR Code oleh superadmin
 
@@ -229,7 +247,7 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 - PHP >= 8.1
 - Composer
 - MySQL >= 5.7
-- Node.js & NPM (untuk asset compilation)
+- Node.js & NPM (untuk asset compilation dan WhatsApp service)
 - Git
 
 ### 🔧 Langkah Instalasi
@@ -278,12 +296,27 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
    npm run build
    ```
 
-8. **Start development server**
+8. **Setup WhatsApp Service (Optional)**
+   ```bash
+   # Masuk ke direktori WhatsApp service
+   cd whatsapp-service
+   
+   # Install dependencies
+   npm install
+   
+   # Jalankan WhatsApp service
+   npm start
+   
+   # Kembali ke root directory
+   cd ..
+   ```
+
+9. **Start development server**
    ```bash
    php artisan serve
    ```
 
-9. **Akses aplikasi**
+10. **Akses aplikasi**
    
    Buka browser: `http://localhost:8000`
 
@@ -327,19 +360,19 @@ Setelah seeding, gunakan akun berikut untuk login:
    - Implementasi jadwal pribadi untuk siswa
    - Modul orang tua untuk pemantauan detail kehadiran anak
    - Batasan waktu edit absensi untuk guru (24 jam)
+   - Riwayat kehadiran anak yang lebih lengkap
 
 2. **Prioritas Menengah**
    - Notifikasi real-time ketidakhadiran untuk orang tua
-   - Riwayat kehadiran anak yang lebih lengkap
-   - Sistem notifikasi WhatsApp/Email otomatis
-
-3. **Prioritas Rendah**
    - Integrasi dengan sistem akademik sekolah
    - Aplikasi mobile untuk siswa dan orang tua
-   - Fitur notifikasi via WhatsApp/Telegram
+   - Sistem notifikasi Email otomatis
+
+3. **Prioritas Rendah**
+   - Fitur notifikasi via Telegram
    - Analisis prediktif untuk tren ketidakhadiran
    - Sistem reward untuk kehadiran konsisten
-   - Integrasi layanan pesan eksternal
+   - Integrasi layanan pesan eksternal lainnya
 
 ## Kontributor
 
@@ -356,6 +389,9 @@ Setelah seeding, gunakan akun berikut untuk login:
 - Sistem validasi waktu dan toleransi keterlambatan
 - Modul laporan dan export Excel/PDF
 - Notification system integration
+- WhatsApp integration dengan Baileys API
+- Template pesan WhatsApp yang dapat dikustomisasi
+- Sistem antrian untuk pengiriman notifikasi massal
 
 ## Lisensi
 
@@ -410,6 +446,10 @@ Jika Anda memiliki pertanyaan, saran, atau menemukan bug, silakan:
 - ✅ Comprehensive reporting
 - ✅ Parent notification system
 - ✅ Mobile-responsive design
+- ✅ WhatsApp integration dengan Baileys API
+- ✅ Template pesan WhatsApp yang dapat dikustomisasi
+- ✅ Sistem antrian untuk notifikasi WhatsApp
+- ✅ Manajemen koneksi WhatsApp melalui admin panel
 
 ## Fitur Admin yang Sudah Diimplementasikan
 
@@ -450,6 +490,8 @@ Jika Anda memiliki pertanyaan, saran, atau menemukan bug, silakan:
    - Pencarian data siswa dan guru
    - Filter dan sorting pada tabel data
    - Interface yang responsif
+   - Manajemen WhatsApp (koneksi, template, pengaturan)
+   - Test notifikasi WhatsApp
 
 ### Fitur Admin yang Masih Perlu Diimplementasikan
 
@@ -464,9 +506,9 @@ Jika Anda memiliki pertanyaan, saran, atau menemukan bug, silakan:
    - ✓ Konfigurasi aturan absensi per kelas atau mapel
 
 3. **Notifikasi dan Integrasi**
-   - Pengaturan notifikasi untuk orang tua siswa
-   - Integrasi dengan layanan pesan (WhatsApp)
-   - Konfigurasi aturan notifikasi
+   - ✅ Pengaturan notifikasi WhatsApp untuk orang tua siswa
+   - ✅ Integrasi dengan layanan pesan WhatsApp
+   - ✅ Konfigurasi aturan notifikasi WhatsApp
 
 4. **Fitur Monitoring Lanjutan**
    - Analytics kehadiran siswa dengan visualisasi lebih detail
@@ -496,6 +538,20 @@ Settings → QR Code Settings → Late Tolerance (dalam menit)
 
 ### Q: Bagaimana cara export laporan?
 **A**: Melalui menu Laporan → pilih filter → Export Excel/PDF
+
+### Q: Bagaimana cara setup WhatsApp untuk notifikasi?
+**A**: 
+1. Admin login → WhatsApp Management → Connect Device
+2. Scan QR Code dengan WhatsApp di HP
+3. Setup template pesan di WhatsApp Templates
+4. Aktifkan notifikasi di Notification Settings
+
+### Q: WhatsApp tidak terkoneksi atau pesan tidak terkirim?
+**A**: 
+- Pastikan WhatsApp service berjalan (`npm start` di folder whatsapp-service)
+- Cek koneksi WhatsApp di admin panel
+- Pastikan nomor HP orang tua valid dan format Indonesia (+62)
+- Restart WhatsApp service jika diperlukan
 
 ## Troubleshooting
 
@@ -547,6 +603,34 @@ php artisan session:table
 php artisan migrate
 ```
 
+#### 6. WhatsApp Service Issues
+```bash
+# Cek status WhatsApp service
+cd whatsapp-service
+npm start
+
+# Restart WhatsApp service
+npm restart
+
+# Clear WhatsApp sessions
+rm -rf sessions/*
+
+# Cek log WhatsApp service
+tail -f logs/whatsapp.log
+```
+
+#### 7. WhatsApp Messages Not Sending
+```bash
+# Cek queue jobs
+php artisan queue:work
+
+# Clear failed jobs
+php artisan queue:flush
+
+# Test WhatsApp connection
+php artisan whatsapp:test
+```
+
 ## Performance Optimization
 
 ### Recommended Settings
@@ -557,6 +641,11 @@ LOG_LEVEL=error
 SESSION_DRIVER=redis
 CACHE_DRIVER=redis
 QUEUE_CONNECTION=redis
+
+# WhatsApp service settings
+WHATSAPP_SERVICE_URL=http://localhost:3000
+WHATSAPP_QUEUE_DELAY=5
+WHATSAPP_MAX_RETRIES=3
 ```
 
 ### Database Optimization
