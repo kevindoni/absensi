@@ -21,3 +21,20 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Backup files
+*.tar.gz
+*.zip
+absensi-backup-*
+
+# Development files
+INSTALL_GUIDE.md
+DEPLOYMENT_CHECKLIST.md
+
+# Personal settings
+.env.local
+.env.personal
+
+# OS specific files
+.DS_Store
+Thumbs.db

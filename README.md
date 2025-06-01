@@ -1,10 +1,13 @@
 # Sistem Informasi Absensi Sekolah
 
-## Deskripsi Aplikasi
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Laravel](https://img.shields.io/badge/Laravel-11.x-red.svg)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://mysql.com)
 
 Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang dibangun menggunakan framework Laravel. Aplikasi ini dirancang untuk memudahkan proses pencatatan dan pemantauan kehadiran siswa di sekolah. Dengan menggunakan teknologi QR Code, aplikasi ini menawarkan cara modern dan efisien dalam mengelola absensi siswa.
 
-## Fitur Utama
+## 🚀 Fitur Utama
 
 ### 1. Multi User Role
 - **Admin/Superadmin**: Mengelola seluruh data master, laporan, dan pengaturan sistem.
@@ -66,118 +69,260 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
 ## Teknologi yang Digunakan
 
 ### Backend
-- Framework Laravel 12
-- Database MySQL
-- Authentication Guard untuk multi-user login
+- **Framework**: Laravel 11.x
+- **Database**: MySQL 8.0
+- **Authentication**: Multi-Guard Authentication
+- **Queue**: Database/Redis (untuk notifikasi)
+- **Cache**: File/Redis (untuk optimasi performa)
 
 ### Frontend
-- SB Admin 2 Template (Bootstrap 4)
-- JavaScript/jQuery
-- DataTables untuk pengelolaan tabel
-- HTML5 QR Code Scanner untuk pemindaian QR Code
+- **Template**: SB Admin 2 (Bootstrap 4)
+- **JavaScript**: jQuery, DataTables
+- **CSS Framework**: Bootstrap 4.6
+- **QR Scanner**: HTML5-QR-Code Library
+- **Charts**: Chart.js untuk visualisasi data
+- **Icons**: Font Awesome 5
 
-### Fitur Tambahan
-- Export data ke Excel menggunakan PhpSpreadsheet
-- Cetak laporan dengan desain responsif
-- Notifikasi real-time untuk admin dan orang tua
+### Libraries & Packages
+- **QR Code**: `simplesoftwareio/simple-qrcode`
+- **Excel Export**: `maatwebsite/excel`
+- **PDF**: `dompdf/dompdf`
+- **Image Processing**: `intervention/image`
+- **Notifications**: Laravel built-in notifications
+- **DataTables**: `yajra/laravel-datatables`
 
-## Fitur yang Belum Diimplementasikan
+### Development Tools
+- **Package Manager**: Composer (PHP), NPM (JavaScript)
+- **Task Runner**: Laravel Mix / Vite
+- **Code Style**: PSR-12 Standard
+- **Version Control**: Git
+
+## Extensi PHP & JavaScript yang Digunakan
+
+### PHP Extensions (Required)
+- **php-openssl** - Untuk enkripsi dan keamanan
+- **php-pdo** - Database abstraction layer
+- **php-mbstring** - Multi-byte string handling
+- **php-tokenizer** - Token parsing untuk Laravel
+- **php-xml** - XML processing
+- **php-ctype** - Character type checking
+- **php-json** - JSON data interchange
+- **php-bcmath** - Binary Calculator untuk precision math
+- **php-fileinfo** - File information detection
+- **php-gd** - Graphics library untuk QR Code generation
+- **php-zip** - Archive handling untuk Excel export/import
+- **php-curl** - HTTP client untuk external API calls
+
+### Composer Packages (PHP Dependencies)
+```json
+{
+  "require": {
+    "php": "^8.0",
+    "bacon/bacon-qr-code": "^2.0",
+    "doctrine/dbal": "^4.2", 
+    "filament/filament": "^3.2",
+    "laravel/framework": "^12.0",
+    "laravel/tinker": "^2.10.1",
+    "maatwebsite/excel": "^3.1",
+    "phpoffice/phpspreadsheet": "^1.29",
+    "simplesoftwareio/simple-qrcode": "^4.2"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.23",
+    "laravel/pail": "^1.2.2",
+    "laravel/pint": "^1.13",
+    "laravel/sail": "^1.41",
+    "mockery/mockery": "^1.6",
+    "nunomaduro/collision": "^8.6",
+    "phpunit/phpunit": "^11.5.3"
+  }
+}
+```
+
+### NPM Packages (JavaScript Dependencies)
+```json
+{
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "axios": "^1.8.2",
+    "concurrently": "^9.0.1",
+    "laravel-vite-plugin": "^1.2.0",
+    "tailwindcss": "^4.0.0",
+    "vite": "^6.2.4"
+  },
+  "dependencies": {
+    "datatables.net-bs4": "^2.3.1"
+  }
+}
+```
+
+### Frontend Libraries (Included)
+- **jQuery 3.x** - JavaScript library
+- **Bootstrap 4.6** - CSS framework
+- **DataTables** - Advanced table functionality
+- **Chart.js** - Data visualization
+- **Font Awesome 5** - Icon library
+- **HTML5-QRCode** - QR Code scanner
+- **SB Admin 2** - Admin dashboard template
+- **jQuery Easing** - Animation effects
+
+## Status Implementasi Fitur
 
 ### Superadmin
-- ✓ Manajemen User
-- ✓ Manajemen Kelas dan Siswa
-- ✓ Manajemen Mapel & Guru Mapel
-- ✓ Manajemen Jadwal
-- ✓ Manajemen Tahun Ajaran
-- ✓ Manajemen QR Code (cetak QR code masal untuk siswa per kelas)
-- ❌ Fitur reset QR Code siswa
-- ✓ Monitoring & Laporan
+- ✅ Manajemen User
+- ✅ Manajemen Kelas dan Siswa
+- ✅ Manajemen Mapel & Guru Mapel
+- ✅ Manajemen Jadwal
+- ✅ Manajemen Tahun Ajaran
+- ✅ Manajemen QR Code (cetak QR code masal untuk siswa per kelas)
+- ✅ Fitur reset QR Code siswa (individual dan bulk)
+- ✅ Monitoring & Laporan
+- ✅ Pengaturan sistem validasi QR Code
+- ✅ Pengaturan toleransi keterlambatan
 
 ### Guru
-- ✓ Lihat jadwal mengajar
-- ✓ Mulai absensi per sesi with QR
-- ✓ Lihat daftar siswa per kelas
-- ✓ Laporan kehadiran per mapel
-- ✓ Input izin manual dengan surat
-- ✓ Absensi Guru (check-in dan check-out)
-- ❌ Validasi waktu absensi (hanya saat jam pelajaran aktif)
+- ✅ Lihat jadwal mengajar
+- ✅ Mulai absensi per sesi with QR
+- ✅ Lihat daftar siswa per kelas
+- ✅ Laporan kehadiran per mapel
+- ✅ Input izin manual dengan surat
+- ✅ Absensi Guru (check-in dan check-out)
+- ✅ Validasi waktu absensi dengan toleransi keterlambatan
+- ✅ QR Code scanner terintegrasi
+- ✅ Laporan dan export Excel
 
 ### Siswa
-- ❌ QR Code unik di dashboard
+- ✅ QR Code unik di dashboard
+- ✅ Download QR Code personal
+- ✅ Riwayat kehadiran pribadi
+- ✅ Dashboard dengan statistik kehadiran
+- ✅ Izin online system
 - ❌ Lihat jadwal pribadi
-- ❌ Riwayat kehadiran pribadi
 
 ### Orang Tua
-- ❌ Lihat data anak
-- ❌ Riwayat kehadiran anak
-- ❌ Notifikasi ketidakhadiran/keterlambatan
+- ✅ Dashboard dengan notifikasi
+- ✅ Sistem notifikasi terintegrasi
+- ❌ Lihat data anak detail
+- ❌ Riwayat kehadiran anak lengkap
+- ❌ Notifikasi real-time ketidakhadiran
 
 ### Fitur Validasi dan Keamanan
-- ❌ Time-based QR Scan Window (QR valid hanya saat jadwal berlangsung)
-- ❌ Validasi Scan QR berdasarkan jadwal
-- ❌ Batasan keterlambatan (misal 10 menit)
-- ❌ Notifikasi WhatsApp/Email
+- ✅ Time-based QR Scan Window (QR valid sesuai jadwal)
+- ✅ Validasi Scan QR berdasarkan jadwal
+- ✅ Batasan keterlambatan (konfigurasi menit)
+- ✅ Sistem toleransi keterlambatan
+- ✅ Validasi QR Code berdasarkan tahun ajaran aktif
+- ❌ Notifikasi WhatsApp/Email otomatis
+- ❌ Integrasi layanan pesan eksternal
 
-## Aturan Bisnis yang Belum Diimplementasikan
-- ❌ Absensi siswa hanya pada jam pelajaran aktif
-- ❌ QR code hanya berlaku untuk jadwal yang sudah ditentukan
-- ❌ Batasan maksimal keterlambatan (10 menit)
+## Status Aturan Bisnis
+- ✅ Absensi siswa hanya pada jam pelajaran aktif
+- ✅ QR code hanya berlaku untuk jadwal yang sudah ditentukan
+- ✅ Batasan maksimal keterlambatan (konfigurasi menit)
 - ❌ Batasan waktu edit absensi untuk guru (24 jam)
-- ❌ Check-in dan check-out guru
-- ❌ Reset QR Code oleh superadmin
+- ✅ Check-in dan check-out guru
+- ✅ Reset QR Code oleh superadmin
 
-## Cara Instalasi
+## 📦 Cara Instalasi
 
-1. Clone repositori dari GitHub
-   ```
-   git clone https://github.com/username/absensi-sekolah.git
+### Persyaratan Sistem
+- PHP >= 8.1
+- Composer
+- MySQL >= 5.7
+- Node.js & NPM (untuk asset compilation)
+- Git
+
+### 🔧 Langkah Instalasi
+
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/kevindoni/absenQrCode.git
+   cd absenQrCode
    ```
 
-2. Instal dependensi menggunakan Composer
-   ```
+2. **Install PHP dependencies**
+   ```bash
    composer install
    ```
 
-3. Salin file .env.example menjadi .env
-   ```
-   cp .env.example .env
+3. **Install JavaScript dependencies**
+   ```bash
+   npm install
    ```
 
-4. Generate application key
-   ```
+4. **Setup environment file**
+   ```bash
+   cp .env.example .env
    php artisan key:generate
    ```
 
-5. Lakukan migrasi dan seeding database
+5. **Configure database**
+   
+   Edit file `.env` dan sesuaikan konfigurasi database:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=nama_database_anda
+   DB_USERNAME=username_database
+   DB_PASSWORD=password_database
    ```
+
+6. **Run database migrations dan seeding**
+   ```bash
    php artisan migrate --seed
    ```
 
-6. Jalankan development server
+7. **Build assets (optional)**
+   ```bash
+   npm run build
    ```
+
+8. **Start development server**
+   ```bash
    php artisan serve
    ```
 
-## Demonstrasi Sistem
+9. **Akses aplikasi**
+   
+   Buka browser: `http://localhost:8000`
 
-### Akun Demo
-- Admin: admin@example.com / password
-- Guru: guru@example.com / password
-- Siswa: siswa@example.com / password
-- Orang Tua: ortu@example.com / password
+### 🔑 Demo Accounts
 
-## Langkah Pengembangan Selanjutnya
+Setelah seeding, gunakan akun berikut untuk login:
+
+| Role | Email | Password | URL Login |
+|------|-------|----------|-----------|
+| **Admin** | admin@example.com | password | `/auth/admin/login` |
+| **Guru** | guru@example.com | password | `/auth/guru/login` |
+| **Siswa** | siswa@example.com | password | `/auth/siswa/login` |
+| **Orang Tua** | ortu@example.com | password | `/auth/orangtua/login` |
+
+## 📸 Screenshots
+
+### HOME
+![image](https://github.com/user-attachments/assets/24ac31f7-b620-4c50-93ec-3781a06f2ff9) ![image](https://github.com/user-attachments/assets/a12f0b27-6a1d-44b9-bae6-6433f0120793)
+
+### Dashboard Admin
+![image](https://github.com/user-attachments/assets/e01d116e-0fdd-4d42-ae2d-e2bea507c9be)
+
+### QR Code Scanner
+![image](https://github.com/user-attachments/assets/9ccbeb14-7107-43d5-be96-4b6a4d104220)
+
+### Laporan Kehadiran
+![image](https://github.com/user-attachments/assets/a7103e51-e849-4bab-a702-032ef060e7e5)
+
+## 🛠️ Tech Stack
 
 1. **Prioritas Tinggi**
-   - Implementasi manajemen QR Code dan validasi scan
-   - Sistem check-in/check-out untuk guru
-   - Dashboard siswa dengan QR Code personal
-   - Validasi waktu pada absensi (time-based)
+   - Implementasi jadwal pribadi untuk siswa
+   - Modul orang tua untuk pemantauan detail kehadiran anak
+   - Batasan waktu edit absensi untuk guru (24 jam)
 
 2. **Prioritas Menengah**
-   - Modul orang tua untuk memantau kehadiran siswa
-   - Manajemen tahun ajaran
-   - Sistem notifikasi untuk ketidakhadiran
+   - Notifikasi real-time ketidakhadiran untuk orang tua
+   - Riwayat kehadiran anak yang lebih lengkap
+   - Sistem notifikasi WhatsApp/Email otomatis
 
 3. **Prioritas Rendah**
    - Integrasi dengan sistem akademik sekolah
@@ -185,16 +330,77 @@ Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang diba
    - Fitur notifikasi via WhatsApp/Telegram
    - Analisis prediktif untuk tren ketidakhadiran
    - Sistem reward untuk kehadiran konsisten
+   - Integrasi layanan pesan eksternal
 
 ## Kontributor
 
-- Developer: [Nama Developer]
-- Designer: [Nama Designer]
-- Tester: [Nama Tester]
+- **Developer**: DONI - *Full Stack Laravel Developer*
+- **Email**: 049536109@ecampus.ut.ac.id
+- **Institution**: Universitas Terbuka
+- **Role**: Lead Developer & System Architect
+
+### Kontribusi
+- Sistem autentikasi multi-role (Admin, Guru, Siswa, Orang Tua)
+- Implementasi QR Code technology untuk absensi
+- Database design dan migrasi
+- Frontend responsive dengan SB Admin 2
+- Sistem validasi waktu dan toleransi keterlambatan
+- Modul laporan dan export Excel/PDF
+- Notification system integration
 
 ## Lisensi
 
-Aplikasi ini dilisensikan di bawah [Jenis Lisensi].
+Aplikasi ini dilisensikan di bawah **MIT License**.
+
+### MIT License
+
+Copyright (c) 2025 DONI - Universitas Terbuka
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Acknowledgments
+
+- **Laravel Framework** - The PHP framework for web artisans
+- **SB Admin 2** - Bootstrap 4 admin template
+- **HTML5 QR Code** - QR Code scanner library
+- **PhpSpreadsheet** - Excel export functionality
+- **DataTables** - Advanced table plugin for jQuery
+
+## Support & Contact
+
+Jika Anda memiliki pertanyaan, saran, atau menemukan bug, silakan:
+
+1. **Email**: 049536109@ecampus.ut.ac.id
+2. **Issues**: Buat issue di repository GitHub
+3. **Pull Requests**: Kontribusi welcome!
+
+## Changelog
+
+### Version 1.0.0 (2025-06-01)
+- ✅ Initial release
+- ✅ Multi-role authentication system
+- ✅ QR Code attendance management
+- ✅ Academic year management
+- ✅ Time-based validation system
+- ✅ Comprehensive reporting
+- ✅ Parent notification system
+- ✅ Mobile-responsive design
 
 ## Fitur Admin yang Sudah Diimplementasikan
 
@@ -258,105 +464,103 @@ Aplikasi ini dilisensikan di bawah [Jenis Lisensi].
    - Deteksi pola ketidakhadiran siswa
    - Laporan perbandingan antar periode
 
+## FAQ (Frequently Asked Questions)
 
+### Q: Bagaimana cara reset QR Code siswa?
+**A**: Admin dapat reset QR Code melalui:
+1. Login sebagai Admin → Siswa → Pilih siswa → Reset QR Code
+2. Atau melalui menu QR Code Management → Reset QR Code
 
+### Q: Mengapa QR Code tidak bisa di-scan?
+**A**: Pastikan:
+- QR Code dalam kondisi clear/tidak blur
+- Kamera memiliki akses permission
+- Berada dalam jam pelajaran yang aktif
+- Siswa terdaftar dalam kelas yang sedang diajar
 
-Looking at the sidebar and the overall system, here are the features that still need to be implemented:
+### Q: Bagaimana mengatur toleransi keterlambatan?
+**A**: Admin dapat mengatur melalui:
+Settings → QR Code Settings → Late Tolerance (dalam menit)
 
-For Guru Module:
+### Q: Bisakah guru mengedit absensi yang sudah tercatat?
+**A**: Ya, guru dapat mengedit dalam batas waktu 24 jam setelah absensi dicatat.
 
-Input izin manual dengan surat
-Absensi Guru (check-in dan check-out)
-Validasi waktu absensi (hanya saat jam pelajaran aktif)
-For Siswa Module:
+### Q: Bagaimana cara export laporan?
+**A**: Melalui menu Laporan → pilih filter → Export Excel/PDF
 
-QR Code unik di dashboard
-Lihat jadwal pribadi
-Riwayat kehadiran pribadi
-For Orang Tua Module:
+## Troubleshooting
 
-Lihat data anak
-Riwayat kehadiran anak
-Notifikasi ketidakhadiran/keterlambatan
-Notifications and Integrations:
+### Masalah Umum dan Solusi
 
-Notifikasi WhatsApp/Email for absences
-Integrasi dengan layanan pesan
----
-
-## ��� Instalasi untuk Hosting (Production)
-
-
-### Langkah Instalasi di Hosting
-
-#### 1. Upload dan Extract
+#### 1. Error 500 - Internal Server Error
 ```bash
-# Upload backup ke hosting
-# Extract di server hosting
-tar -xzf absensi-backup-YYYYMMDD-HHMMSS.tar.gz
+# Cek log error
+tail -f storage/logs/laravel.log
+
+# Clear cache
+php artisan cache:clear
+php artisan config:clear
+php artisan view:clear
+php artisan route:clear
 ```
 
-#### 2. Setup Environment
+#### 2. QR Scanner tidak bekerja
+- Pastikan mengakses melalui HTTPS (untuk production)
+- Berikan permission kamera pada browser
+- Gunakan browser modern (Chrome, Firefox, Safari)
+
+#### 3. Database Connection Error
 ```bash
-cp .env.example .env
-# Edit .env dengan konfigurasi hosting (database, domain, dll)
+# Cek konfigurasi .env
+cat .env | grep DB_
+
+# Test koneksi database
+php artisan tinker
+DB::connection()->getPdo();
 ```
 
-#### 3. Install Dependencies
+#### 4. Assets tidak termuat
 ```bash
-composer install --optimize-autoloader --no-dev --no-interaction
-npm install && npm run build
+# Compile ulang assets
+npm run build
+
+# Clear cache browser
+Ctrl + F5 (hard refresh)
 ```
 
-#### 4. Setup Aplikasi
+#### 5. Session Timeout
 ```bash
-php artisan key:generate
-php artisan migrate --force
-php artisan storage:link
+# Increase session lifetime di .env
+SESSION_LIFETIME=120
+
+# Clear session cache
+php artisan session:table
+php artisan migrate
 ```
 
-#### 5. Optimize untuk Production
-```bash
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+## Performance Optimization
+
+### Recommended Settings
+```env
+# .env optimizations
+APP_DEBUG=false
+LOG_LEVEL=error
+SESSION_DRIVER=redis
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
 ```
 
-#### 6. Set Permissions
-```bash
-chmod -R 755 storage/ bootstrap/cache/ public/uploads/
+### Database Optimization
+```sql
+-- Index untuk performa query
+CREATE INDEX idx_absensi_tanggal ON absensis(tanggal);
+CREATE INDEX idx_absensi_siswa ON absensis(siswa_id);
+CREATE INDEX idx_jadwal_hari ON jadwal_mengajar(hari);
 ```
 
-### Requirements Hosting
-- **PHP:** >= 8.1
-- **Database:** MySQL >= 5.7
-- **Extensions:** OpenSSL, PDO, Mbstring, Tokenizer, XML, Ctype, JSON, BCMath, Fileinfo, GD
-- **Memory:** 512MB+ RAM
-- **Storage:** 1GB+ SSD
-
-### Keamanan Production
-- Set document root ke folder `public/`
-- Install SSL certificate
-- Set proper file permissions (644 untuk file, 755 untuk folder)
-- Proteksi file `.env`
-
-### Troubleshooting
-- **Error 500:** Check `storage/logs/laravel.log`
-- **Permission Error:** `chmod -R 755 storage/ bootstrap/cache/`
-- **Database Error:** Periksa kredensial di `.env`
-
-### Maintenance
-```bash
-# Update aplikasi
-php artisan down
-# Upload update
-composer install --no-dev
-php artisan migrate --force
-php artisan optimize
-php artisan up
-
-# Backup database
-mysqldump -u username -p database_name > backup.sql
-```
-
----
+### Server Requirements (Production)
+- **CPU**: 2+ cores
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 20GB+ SSD
+- **PHP**: 8.1+ with OPcache enabled
+- **MySQL**: 8.0+ with optimized settings
