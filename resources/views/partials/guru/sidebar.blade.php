@@ -33,13 +33,19 @@
             <i class="fas fa-fw fa-user-check"></i>
             <span>Presensi Guru</span>
         </a>
-    </li>
-
-    <!-- Nav Item - Absensi Siswa -->
+    </li>    <!-- Nav Item - Absensi Siswa -->
     <li class="nav-item {{ request()->routeIs('guru.absensi.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('guru.absensi.index') }}">
             <i class="fas fa-fw fa-clipboard-list"></i>
             <span>Absensi Siswa</span>
+        </a>
+    </li>
+
+    <!-- Nav Item - Jadwal Pribadi -->
+    <li class="nav-item {{ request()->routeIs('guru.jadwal.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('guru.jadwal.index') }}">
+            <i class="fas fa-fw fa-calendar-alt"></i>
+            <span>Jadwal Pribadi</span>
         </a>
     </li>
 

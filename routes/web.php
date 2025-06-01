@@ -209,6 +209,18 @@ Route::middleware(['auth:guru'])->name('guru.')->prefix('guru')->group(function 
     Route::get('/laporan/export', [App\Http\Controllers\Guru\LaporanController::class, 'export'])->name('laporan.export');
     Route::get('/laporan/{laporan}', [App\Http\Controllers\Guru\LaporanController::class, 'show'])->name('laporan.show');
     
+    // Jadwal Routes for Personal Schedule
+    Route::get('/jadwal', [App\Http\Controllers\Guru\JadwalController::class, 'index'])->name('jadwal.index');
+    Route::get('/jadwal/data', [App\Http\Controllers\Guru\JadwalController::class, 'getScheduleData'])->name('jadwal.data');
+    Route::get('/jadwal/weekly', [App\Http\Controllers\Guru\JadwalController::class, 'weekly'])->name('jadwal.weekly');
+    Route::get('/jadwal/preview-pdf', [App\Http\Controllers\Guru\JadwalController::class, 'previewPdf'])->name('jadwal.preview-pdf');
+    Route::get('/jadwal/preview-compact-pdf', [App\Http\Controllers\Guru\JadwalController::class, 'previewCompactPdf'])->name('jadwal.preview-compact-pdf');
+    Route::get('/jadwal/preview-weekly-pdf', [App\Http\Controllers\Guru\JadwalController::class, 'previewWeeklyPdf'])->name('jadwal.preview-weekly-pdf');
+    Route::get('/jadwal/export-pdf', [App\Http\Controllers\Guru\JadwalController::class, 'exportPdf'])->name('jadwal.export-pdf');
+    Route::get('/jadwal/export-compact-pdf', [App\Http\Controllers\Guru\JadwalController::class, 'exportCompactPdf'])->name('jadwal.export-compact-pdf');
+    Route::get('/jadwal/export-weekly-pdf', [App\Http\Controllers\Guru\JadwalController::class, 'exportWeeklyPdf'])->name('jadwal.export-weekly-pdf');
+    Route::get('/jadwal/{id}', [App\Http\Controllers\Guru\JadwalController::class, 'show'])->name('jadwal.show');
+    
     // Absensi detail route
     Route::get('/absensi/{jadwal}/{tanggal}/detail', [App\Http\Controllers\Guru\AbsensiController::class, 'detail'])->name('absensi.detail');
 });
