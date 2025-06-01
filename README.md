@@ -21,13 +21,13 @@ Dalam era digital saat ini, banyak sekolah masih menggunakan sistem absensi manu
 - **Mengoptimalkan workflow** administratif sekolah
 
 ### Keunggulan Utama
-✅ **Multi-Role System** - Mendukung 4 role pengguna dengan hak akses berbeda
-✅ **QR Code Technology** - Sistem absensi modern dan anti-manipulasi  
-✅ **WhatsApp Integration** - Notifikasi otomatis kepada orang tua
-✅ **Real-time Reporting** - Laporan dan statistik kehadiran instant
-✅ **Mobile Responsive** - Dapat diakses dari berbagai perangkat
-✅ **Data Security** - Sistem autentikasi berlapis dan validasi ketat
-✅ **Scalable Architecture** - Dapat menangani ribuan siswa dan guru
+- ✅ **Multi-Role System** - Mendukung 4 role pengguna dengan hak akses berbeda
+- ✅ **QR Code Technology** - Sistem absensi modern dan anti-manipulasi  
+- ✅ **WhatsApp Integration** - Notifikasi otomatis kepada orang tua
+- ✅ **Real-time Reporting** - Laporan dan statistik kehadiran instant
+- ✅ **Mobile Responsive** - Dapat diakses dari berbagai perangkat
+- ✅ **Data Security** - Sistem autentikasi berlapis dan validasi ketat
+- ✅ **Scalable Architecture** - Dapat menangani ribuan siswa dan guru
 
 ### Target Pengguna
 - **Sekolah Dasar (SD)**
