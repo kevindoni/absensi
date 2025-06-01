@@ -36,7 +36,8 @@
                 @csrf
                 <div class="row">
                     <div class="col-md-6">
-                        <h5 class="text-primary mb-4">Pengaturan Umum</h5>                        <div class="form-group">
+                        <h5 class="text-primary mb-4">Pengaturan Umum</h5>                        
+                        <div class="form-group">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="email_notifications" name="email_notifications" 
                                        value="1" {{ $settings['email_notifications'] ? 'checked' : '' }}>
@@ -47,7 +48,7 @@
                             <small class="form-text text-muted mt-1">
                                 Kirim notifikasi melalui email ke orang tua/wali siswa.
                             </small>
-                        </div>
+                        </div>                        
                         <div class="form-group">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="notify_parent_on_absence" name="notify_parent_on_absence" 
@@ -58,6 +59,20 @@
                             </div>
                             <small class="form-text text-muted mt-1">
                                 Kirim notifikasi ke orang tua/wali siswa ketika siswa tidak hadir (alpha, izin, atau sakit).
+                            </small>
+                        </div>
+
+                        <h5 class="text-success mb-4 mt-4">Pengaturan WhatsApp</h5>
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="enable_whatsapp_attendance_notifications" name="enable_whatsapp_attendance_notifications" 
+                                       value="1" {{ $settings['enable_whatsapp_attendance_notifications'] ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="enable_whatsapp_attendance_notifications">
+                                    Aktifkan Notifikasi WhatsApp untuk Absensi
+                                </label>
+                            </div>
+                            <small class="form-text text-muted mt-1">
+                                Kirim notifikasi WhatsApp otomatis ke orang tua/wali siswa setiap kali absensi dicatat (hadir, terlambat, tidak hadir, dll).
                             </small>
                         </div>
                     </div>

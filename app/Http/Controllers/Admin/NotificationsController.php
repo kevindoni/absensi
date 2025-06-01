@@ -9,12 +9,12 @@ use Illuminate\Http\Request;
 class NotificationsController extends Controller
 {    /**
      * Show notifications settings page
-     */
-    public function settings()
+     */    public function settings()
     {
         $settings = [
             'email_notifications' => $this->getBoolSetting('email_notifications', true),
             'notify_parent_on_absence' => $this->getBoolSetting('notify_parent_on_absence', true),
+            'enable_whatsapp_attendance_notifications' => $this->getBoolSetting('enable_whatsapp_attendance_notifications', true),
             'notification_email_template' => Setting::getSetting('notification_email_template', 
                 'Yth. {nama_ortu}, kami informasikan bahwa {nama_siswa} tidak hadir di sekolah pada tanggal {tanggal} dengan status {status}.'),
         ];
@@ -23,12 +23,12 @@ class NotificationsController extends Controller
     }
       /**
      * Update notification settings
-     */
-    public function updateSettings(Request $request)
+     */    public function updateSettings(Request $request)
     {
         $validatedData = $request->validate([
             'email_notifications' => 'nullable|in:1',
             'notify_parent_on_absence' => 'nullable|in:1',
+            'enable_whatsapp_attendance_notifications' => 'nullable|in:1',
             'notification_email_template' => 'nullable|string',
         ]);
         
@@ -37,6 +37,9 @@ class NotificationsController extends Controller
         
         // Update parent notification setting
         $this->updateSetting('notify_parent_on_absence', isset($validatedData['notify_parent_on_absence']) ? 'true' : 'false');
+        
+        // Update WhatsApp attendance notifications setting
+        $this->updateSetting('enable_whatsapp_attendance_notifications', isset($validatedData['enable_whatsapp_attendance_notifications']) ? 'true' : 'false');
         
         // Update templates if provided
         if (isset($validatedData['notification_email_template'])) {
@@ -70,23 +73,28 @@ class NotificationsController extends Controller
                 'value' => $value
             ]);
         }
-    }
-      /**
+    }      /**
      * Test notification sending
-     */      public function testNotification()
+     */      
+      public function testNotification()
     {
-        // Run the test notification command with force flag and capture output
-        $exitCode = \Artisan::call('notification:test', ['--force' => true], $output = new \Symfony\Component\Console\Output\BufferedOutput);
+        // Run the test notification command and capture output
+        $exitCode = \Artisan::call('notification:test', ['message' => 'Test notification from admin panel']);
         $output = \Artisan::output();
         
-        // Also send a system notification to the admin
-        $adminNotificationService = new \App\Services\AdminNotificationService();
-        $adminNotificationService->sendTestNotification();
+        // Also send a system notification to the admin using dependency injection
+        try {
+            $adminNotificationService = app(\App\Services\AdminNotificationService::class);
+            $adminNotificationService->sendTestNotification();
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send test notification: ' . $e->getMessage());
+        }
         
         // Get notification settings
         $settings = [
             'email_notifications' => $this->getBoolSetting('email_notifications', true),
             'notify_parent_on_absence' => $this->getBoolSetting('notify_parent_on_absence', true),
+            'enable_whatsapp_attendance_notifications' => $this->getBoolSetting('enable_whatsapp_attendance_notifications', true),
         ];
         
         return view('admin.notifications.test', [

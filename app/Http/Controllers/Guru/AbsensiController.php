@@ -10,6 +10,7 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\JurnalMengajar;
 use App\Models\Setting;
+use App\Services\AttendanceNotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\Schema;
 
 class AbsensiController extends Controller
 {
+    private $attendanceNotificationService;
+
+    public function __construct(AttendanceNotificationService $attendanceNotificationService)
+    {
+        $this->attendanceNotificationService = $attendanceNotificationService;
+    }
     public function index()
     {
         $guru = Auth::guard('guru')->user();
@@ -550,12 +557,10 @@ class AbsensiController extends Controller
                 }
             }
             
-            $keterangan = ($status === 'terlambat' || $minutesLate > 0) ? $this->formatMinutesLate($minutesLate) : 'Hadir tepat waktu';
-
-            // Create attendance record
+            $keterangan = ($status === 'terlambat' || $minutesLate > 0) ? $this->formatMinutesLate($minutesLate) : 'Hadir tepat waktu';            // Create attendance record
             DB::beginTransaction();
             try {
-                Absensi::create([
+                $absensi = Absensi::create([
                     'tanggal' => $tanggal,
                     'jadwal_id' => $jadwalId,
                     'guru_id' => $guru->id,
@@ -564,7 +569,21 @@ class AbsensiController extends Controller
                     'minutes_late' => $minutesLate,
                     'keterangan' => $keterangan,
                 ]);
-                  DB::commit();
+                  
+                DB::commit();
+                
+                // Send WhatsApp notification to parent (async, don't block response)
+                try {
+                    $this->attendanceNotificationService->sendAttendanceNotification($absensi);
+                } catch (\Exception $e) {
+                    // Log error but don't fail the attendance recording
+                    \Log::error('Failed to send attendance notification via WhatsApp', [
+                        'absensi_id' => $absensi->id,
+                        'siswa_id' => $siswa->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+                
                 return response()->json([
                     'success' => true,
                     'message' => ($status === 'terlambat' || $minutesLate > 0) 
@@ -726,10 +745,9 @@ class AbsensiController extends Controller
             }
             
             $keterangan = ($status === 'terlambat' || $minutesLate > 0) ? $this->formatMinutesLate($minutesLate) : 'Hadir tepat waktu';
-            
-            DB::beginTransaction();
+              DB::beginTransaction();
             try {
-                Absensi::create([
+                $absensi = Absensi::create([
                     'tanggal' => $tanggal,
                     'jadwal_id' => $jadwalId,
                     'guru_id' => $guru->id,                    
@@ -738,8 +756,22 @@ class AbsensiController extends Controller
                     'minutes_late' => $minutesLate,
                     'keterangan' => $keterangan,
                 ]);
-                  DB::commit();
-                  return response()->json([
+                  
+                DB::commit();
+                
+                // Send WhatsApp notification to parent (async, don't block response)
+                try {
+                    $this->attendanceNotificationService->sendAttendanceNotification($absensi);
+                } catch (\Exception $e) {
+                    // Log error but don't fail the attendance recording
+                    \Log::error('Failed to send attendance notification via WhatsApp', [
+                        'absensi_id' => $absensi->id,
+                        'siswa_id' => $siswa->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+                
+                return response()->json([
                     'success' => true,
                     'message' => ($status === 'terlambat' || $minutesLate > 0) 
                         ? "Kehadiran dicatat (" . $this->formatMinutesLate($minutesLate) . ")" 
@@ -823,9 +855,8 @@ class AbsensiController extends Controller
                     ->where('jadwal_id', $jadwalId)
                     ->pluck('siswa_id')
                     ->toArray();
-                
-                $jadwal->kelas->siswa()->whereNotIn('id', $presentSiswaIds)->each(function ($siswa) use ($tanggal, $jadwalId, $guru) {
-                    Absensi::create([
+                  $jadwal->kelas->siswa()->whereNotIn('id', $presentSiswaIds)->each(function ($siswa) use ($tanggal, $jadwalId, $guru) {
+                    $absensi = Absensi::create([
                         'tanggal' => $tanggal,
                         'jadwal_id' => $jadwalId,
                         'guru_id' => $guru->id,
@@ -834,6 +865,18 @@ class AbsensiController extends Controller
                         'keterangan' => 'Tidak hadir',
                         'is_completed' => true
                     ]);
+                    
+                    // Send WhatsApp notification to parent for absent student
+                    try {
+                        $this->attendanceNotificationService->sendAttendanceNotification($absensi);
+                    } catch (\Exception $e) {
+                        // Log error but don't fail the completion process
+                        \Log::error('Failed to send absence notification via WhatsApp', [
+                            'absensi_id' => $absensi->id,
+                            'siswa_id' => $siswa->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
                 });
             }
             

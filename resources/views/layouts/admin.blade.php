@@ -123,12 +123,15 @@
                         // Remove the notification item
                         $(`[data-id="${id}"]`).fadeOut();
                     }
-                }
+                }            
             });
         }
     </script>
-
+    
     <!-- Page specific scripts -->
     @yield('scripts')
+    
+    <!-- Pushed scripts -->
+    @stack('scripts')
 </body>
 </html>

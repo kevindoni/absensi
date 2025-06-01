@@ -28,7 +28,8 @@ class CreateTestNotification extends Command
      */
     public function handle()
     {
-        $notificationService = new AdminNotificationService();
+        // Use the service container to resolve the dependency
+        $notificationService = app(\App\Services\AdminNotificationService::class);
         
         $message = $this->argument('message') ?? 'Ini adalah notifikasi test pada ' . now()->format('d M Y H:i:s');
         $type = $this->option('type');

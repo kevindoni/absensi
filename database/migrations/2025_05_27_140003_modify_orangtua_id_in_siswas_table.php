@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,13 +13,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('siswas', function (Blueprint $table) {
-            // Drop the existing foreign key
-            $table->dropForeign(['orangtua_id']);
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropForeign(['orangtua_id']);
+            }
             
-            // Make the column nullable
             $table->foreignId('orangtua_id')->nullable()->change();
             
-            // Add the foreign key back with nullOnDelete
             $table->foreign('orangtua_id')->references('id')->on('orangtuas')->nullOnDelete();
         });
     }
@@ -29,13 +29,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('siswas', function (Blueprint $table) {
-            // Drop the foreign key
-            $table->dropForeign(['orangtua_id']);
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropForeign(['orangtua_id']);
+            }
             
-            // Make the column required again
-            $table->foreignId('orangtua_id')->nullable(false)->change();
+            $table->foreignId('orangtua_id')->nullable(false)->change(); // Revert to non-nullable if that was the original state
             
-            // Add the foreign key back without nullOnDelete
             $table->foreign('orangtua_id')->references('id')->on('orangtuas');
         });
     }

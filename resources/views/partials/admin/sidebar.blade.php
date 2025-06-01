@@ -122,15 +122,22 @@
     <!-- Heading -->
     <div class="sidebar-heading">
         Pengaturan
-    </div>
-
-    <!-- Nav Item - Notifikasi Settings -->
+    </div>    <!-- Nav Item - Notifikasi Settings -->
     <li class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('admin.notifications.settings') }}">
             <i class="fas fa-fw fa-bell"></i>
             <span>Pengaturan Notifikasi</span>
         </a>
     </li>
+
+    <!-- Nav Item - WhatsApp Settings -->
+    <li class="nav-item {{ request()->routeIs('admin.whatsapp.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.whatsapp.index') }}">
+            <i class="fab fa-fw fa-whatsapp"></i>
+            <span>WhatsApp Gateway</span>
+        </a>
+    </li>
+
     <!-- Nav Item - System Settings -->
     <li class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('admin.settings.index') }}">

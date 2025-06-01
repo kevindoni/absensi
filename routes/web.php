@@ -165,6 +165,19 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/notifications/test', [App\Http\Controllers\Admin\NotificationsController::class, 'testNotification'])->name('notifications.test');
     Route::post('/notifications/test-wa-connection', [App\Http\Controllers\Admin\NotificationsController::class, 'testWaConnection'])->name('notifications.test-wa-connection');
     
+    // WhatsApp Settings Routes
+    Route::get('/whatsapp', [App\Http\Controllers\Admin\WhatsAppController::class, 'index'])->name('whatsapp.index');
+    Route::get('/whatsapp/qr-code', [App\Http\Controllers\Admin\WhatsAppController::class, 'getQRCode'])->name('whatsapp.qr-code');
+    Route::get('/whatsapp/status', [App\Http\Controllers\Admin\WhatsAppController::class, 'getStatus'])->name('whatsapp.status');
+    Route::post('/whatsapp/disconnect', [App\Http\Controllers\Admin\WhatsAppController::class, 'disconnect'])->name('whatsapp.disconnect');
+    Route::post('/whatsapp/gateway', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateGateway'])->name('whatsapp.gateway');
+    Route::post('/whatsapp/admin-numbers', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateAdminNumbers'])->name('whatsapp.admin-numbers');
+    Route::post('/whatsapp/templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateTemplates'])->name('whatsapp.templates');
+    Route::post('/whatsapp/attendance-templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateAttendanceTemplates'])->name('whatsapp.attendance-templates');
+    Route::post('/whatsapp/test-attendance-notification', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestAttendanceNotification'])->name('whatsapp.test-attendance-notification');
+    Route::post('/whatsapp/test-message', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestMessage'])->name('whatsapp.test-message');
+    Route::post('/whatsapp/test-notification', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestNotification'])->name('whatsapp.test-notification');
+    
     // Admin Notifications Routes
     Route::get('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/mark-as-read', [App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
