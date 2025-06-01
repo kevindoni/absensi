@@ -301,16 +301,21 @@ Setelah seeding, gunakan akun berikut untuk login:
 ## 📸 Screenshots
 
 ### HOME
-![image](https://github.com/user-attachments/assets/24ac31f7-b620-4c50-93ec-3781a06f2ff9) ![image](https://github.com/user-attachments/assets/a12f0b27-6a1d-44b9-bae6-6433f0120793)
+![image](https://github.com/user-attachments/assets/5594c375-593a-4e35-a7f5-58df1730ab70)
+![image](https://github.com/user-attachments/assets/95b34d33-fdba-4590-88ee-767b19d1198e)
+
 
 ### Dashboard Admin
-![image](https://github.com/user-attachments/assets/e01d116e-0fdd-4d42-ae2d-e2bea507c9be)
+![image](https://github.com/user-attachments/assets/53b55c3d-8c80-44f5-bc7d-131b397ddc95)
+
 
 ### QR Code Scanner
-![image](https://github.com/user-attachments/assets/9ccbeb14-7107-43d5-be96-4b6a4d104220)
+![image](https://github.com/user-attachments/assets/fb17d97d-8288-4fca-9d86-4561c24b1444)
+
 
 ### Laporan Kehadiran
-![image](https://github.com/user-attachments/assets/a7103e51-e849-4bab-a702-032ef060e7e5)
+![image](https://github.com/user-attachments/assets/58fdc4b3-7918-4672-9bd4-31fd2a61c6a0)
+
 
 ## 🛠️ Tech Stack
 
