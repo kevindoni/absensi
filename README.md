@@ -313,6 +313,10 @@ Setelah seeding, gunakan akun berikut untuk login:
 ![image](https://github.com/user-attachments/assets/fb17d97d-8288-4fca-9d86-4561c24b1444)
 
 
+### Whatsapp Gateway Integration
+![image](https://github.com/user-attachments/assets/c2d83a63-9e43-430a-8754-dcd9cffd7bf9)
+
+
 ### Laporan Kehadiran
 ![image](https://github.com/user-attachments/assets/58fdc4b3-7918-4672-9bd4-31fd2a61c6a0)
 
