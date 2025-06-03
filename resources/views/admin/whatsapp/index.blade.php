@@ -3,86 +3,185 @@
 @section('title', 'Pengaturan WhatsApp')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Page Heading -->
+<div class="container-fluid">    <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">
             <i class="fab fa-whatsapp text-success"></i> Pengaturan WhatsApp
         </h1>
-        <div>
-            <button class="btn btn-info btn-sm" onclick="refreshStatus()">
-                <i class="fas fa-sync-alt"></i> Refresh Status
+        <div class="btn-group d-flex">
+            <button class="btn btn-info btn-sm flex-fill" onclick="refreshStatus()">
+                <i class="fas fa-sync-alt"></i> <span class="d-none d-sm-inline">Refresh</span>
             </button>
-            <button class="btn btn-success btn-sm" onclick="sendTestNotification()">
-                <i class="fas fa-paper-plane"></i> Test Notifikasi
+            <button class="btn btn-success btn-sm flex-fill" onclick="sendTestNotification()">
+                <i class="fas fa-paper-plane"></i> <span class="d-none d-sm-inline">Test Admin</span>
             </button>
         </div>
     </div>
 
-    <!-- Connection Status Card -->
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-wifi"></i> Status Koneksi WhatsApp
-                    </h6>
-                    <div id="connection-badge">
-                        @if($isConnected)
-                            <span class="badge badge-success">
-                                <i class="fas fa-check-circle"></i> Terhubung
-                            </span>
-                        @else
-                            <span class="badge badge-danger">
-                                <i class="fas fa-times-circle"></i> Tidak Terhubung
-                            </span>
-                        @endif
+    <!-- Main Settings Row -->
+    <div class="row">
+        <!-- Connection & Status Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fab fa-whatsapp mr-2"></i> Status Koneksi WhatsApp
+                        </h6>
+                        <div id="connection-indicator" class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm text-light mr-2" role="status" id="status-spinner" style="display: none;">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <small id="last-update" class="text-light opacity-75">
+                                Last update: {{ \Carbon\Carbon::now()->setTimezone('Asia/Jakarta')->format('d/m/Y H:i:s') }}
+                            </small>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div id="qr-code-section" style="{{ $isConnected ? 'display: none;' : '' }}">
-                                <h6 class="font-weight-bold">Scan QR Code untuk Menghubungkan WhatsApp:</h6>
-                                <div class="text-center mb-3">
-                                    <div id="qr-code-container">
-                                        <button class="btn btn-primary" onclick="generateQRCode()">
-                                            <i class="fas fa-qrcode"></i> Generate QR Code
-                                        </button>
+                <div class="card-body p-4">
+                    <!-- Status Overview -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div id="connection-status-card" class="status-card">
+                                @if($isConnected)
+                                    <div class="status-card-connected">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-icon status-icon-success">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <h5 class="mb-1 font-weight-bold text-success">WhatsApp Terhubung</h5>
+                                                    <p class="mb-0 text-muted small">Gateway aktif dan siap mengirim notifikasi</p>
+                                                    <small class="text-success">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        Online sejak: <span id="connection-time">{{ date('d/m/Y H:i') }}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="status-actions">
+                                                <button class="btn btn-outline-danger btn-sm" onclick="disconnectWhatsApp()">
+                                                    <i class="fas fa-unlink mr-1"></i> Disconnect
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="progress" style="height: 4px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i>
-                                    <strong>Cara Menghubungkan:</strong>
-                                    <ol class="mb-0 mt-2">
-                                        <li>Buka WhatsApp di ponsel Anda</li>
-                                        <li>Tap Menu (3 titik) → Linked Devices</li>
-                                        <li>Tap "Link a Device"</li>
-                                        <li>Scan QR Code di atas</li>
-                                    </ol>
-                                </div>
-                            </div>
-                            <div id="connected-section" style="{{ !$isConnected ? 'display: none;' : '' }}">
-                                <div class="alert alert-success">
-                                    <i class="fas fa-check-circle"></i>
-                                    <strong>WhatsApp Terhubung!</strong>
-                                    <p class="mb-0">Sistem siap mengirim notifikasi melalui WhatsApp.</p>
-                                </div>
-                                <button class="btn btn-danger" onclick="disconnectWhatsApp()">
-                                    <i class="fas fa-unlink"></i> Disconnect WhatsApp
-                                </button>
+                                @else
+                                    <div class="status-card-disconnected">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-icon status-icon-danger">
+                                                    <i class="fas fa-times-circle"></i>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <h5 class="mb-1 font-weight-bold text-danger">Tidak Terhubung</h5>
+                                                    <p class="mb-0 text-muted small">Silakan scan QR Code untuk menghubungkan WhatsApp</p>
+                                                    <small class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                        Service tidak aktif
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="status-actions">
+                                                <button class="btn btn-primary btn-sm" onclick="generateQRCode()">
+                                                    <i class="fas fa-qrcode mr-1"></i> Generate QR
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="progress" style="height: 4px;">
+                                                <div class="progress-bar bg-danger" role="progressbar" style="width: 30%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6 class="font-weight-bold">Informasi Gateway:</h6>
-                            <div class="form-group">
-                                <label for="gateway-url">Gateway URL:</label>
-                                <div class="input-group">
-                                    <input type="url" class="form-control" id="gateway-url" value="{{ $gatewayUrl }}" placeholder="http://localhost:3000">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" onclick="updateGateway()">
-                                            <i class="fas fa-save"></i> Update
-                                        </button>
+                    </div>                    <!-- Configuration Section -->
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="config-section">
+                                <h6 class="font-weight-bold text-dark mb-3">
+                                    <i class="fas fa-cog text-primary mr-2"></i> Gateway URL
+                                </h6>
+                                <div class="form-group">
+                                    <label class="small font-weight-bold text-muted">Gateway Endpoint:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-light">
+                                                <i class="fas fa-link text-muted"></i>
+                                            </span>
+                                        </div>
+                                        <input type="url" class="form-control" id="gateway-url" 
+                                               value="{{ $gatewayUrl ?? 'http://localhost:3000' }}" 
+                                               placeholder="http://localhost:3000">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-primary" onclick="updateGateway()">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="config-section">
+                                <h6 class="font-weight-bold text-dark mb-3">
+                                    <i class="fas fa-users text-success mr-2"></i> Nomor Admin
+                                </h6>
+                                <div class="form-group">
+                                    <label class="small font-weight-bold text-muted">Admin WhatsApp:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-light">
+                                                <i class="fas fa-phone text-muted"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control" id="admin-numbers" 
+                                               value="{{ implode(', ', $adminNumbers ?? []) }}" 
+                                               placeholder="628123456789, 628987654321">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-success" onclick="updateAdminNumbers()">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- Statistics Section -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="quick-stats bg-light rounded p-3">
+                                <div class="row text-center">
+                                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                        <div class="stat-item">
+                                            <h5 class="mb-1 font-weight-bold text-primary" id="total-sent">0</h5>
+                                            <small class="text-muted">Pesan Terkirim</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                        <div class="stat-item">
+                                            <h5 class="mb-1 font-weight-bold text-success" id="success-rate">0%</h5>
+                                            <small class="text-muted">Success Rate</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                        <div class="stat-item">
+                                            <h5 class="mb-1 font-weight-bold text-info" id="admin-count">{{ count($adminNumbers ?? []) }}</h5>
+                                            <small class="text-muted">Admin Aktif</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                        <div class="stat-item">
+                                            <h5 class="mb-1 font-weight-bold text-warning" id="uptime">0h 0m</h5>
+                                            <small class="text-muted">Uptime</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -91,267 +190,169 @@
                 </div>
             </div>
         </div>
-    </div>    <div class="row">
-        <!-- Admin Numbers Card -->
-        <div class="col-lg-6 mb-4">
+
+        <!-- Test Functions Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-success text-white py-3">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-vial mr-2"></i> Test Functions
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Quick Test Form -->
+                    <div class="test-form-section mb-4">
+                        <div class="form-group">
+                            <label class="small font-weight-bold text-muted">Nomor Tujuan:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-phone text-muted"></i>
+                                    </span>
+                                </div>
+                                <input type="text" class="form-control" id="test-phone" 
+                                       placeholder="628123456789">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="small font-weight-bold text-muted">Pesan Test:</label>
+                            <textarea class="form-control" id="test-message" rows="3" 
+                                      placeholder="Tulis pesan test...">Test WhatsApp dari {{ config('app.name') }}
+Tanggal: {{ date('d/m/Y H:i:s') }}
+Status: Normal</textarea>
+                        </div>
+                    </div>                    <!-- Test Buttons -->
+                    <div class="test-actions mb-4">
+                        <button class="btn btn-success btn-block mb-2" onclick="sendTestMessage()">
+                            <i class="fas fa-paper-plane mr-2"></i> Kirim Test Pesan
+                        </button>
+                        <div class="row">
+                            <div class="col-6 pr-1">
+                                <button class="btn btn-info btn-sm btn-block" onclick="testSystemHealth()">
+                                    <i class="fas fa-heartbeat mr-1"></i> <span class="d-none d-lg-inline">Health</span> Check
+                                </button>
+                            </div>
+                            <div class="col-6 pl-1">
+                                <button class="btn btn-warning btn-sm btn-block" onclick="generateQRCode()">
+                                    <i class="fas fa-qrcode mr-1"></i> QR <span class="d-none d-lg-inline">Code</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Results -->
+                    <div id="test-results" class="test-results" style="display: none;">
+                        <div class="alert alert-info border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="result-icon mr-3">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="result-content">
+                                    <h6 class="mb-1">Test Result</h6>
+                                    <p class="mb-0 small" id="test-result-message">Ready for testing...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    <!-- Test Statistics -->
+                    <div class="test-stats">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stat-box p-2 border rounded">
+                                    <h6 class="mb-1 font-weight-bold text-success" id="success-tests">0</h6>
+                                    <small class="text-muted">Success</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-box p-2 border rounded">
+                                    <h6 class="mb-1 font-weight-bold text-danger" id="failed-tests">0</h6>
+                                    <small class="text-muted">Failed</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Section (Hidden by default) -->
+    <div id="qr-code-section" class="row" style="{{ $isConnected ? 'display: none;' : '' }}">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-header bg-gradient-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-qrcode mr-2"></i> QR Code WhatsApp
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="alert alert-info">
+                        <h6 class="mb-2"><i class="fas fa-info-circle mr-2"></i> Cara Menghubungkan WhatsApp:</h6>
+                        <ol class="text-left">
+                            <li>Klik tombol "Generate QR Code"</li>
+                            <li>Buka WhatsApp di ponsel Anda</li>
+                            <li>Pilih menu "Linked Devices" → "Link a Device"</li>
+                            <li>Scan QR Code yang muncul di bawah</li>
+                        </ol>
+                    </div>
+                    <div id="qr-code-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Notification Section -->
+    <div class="row mt-4">
+        <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-users"></i> Nomor Admin WhatsApp
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="admin-numbers">Nomor WhatsApp Admin (pisahkan dengan koma):</label>
-                        <textarea class="form-control" id="admin-numbers" rows="3" placeholder="628123456789, 628987654321">{{ old('admin_numbers', implode(', ', $adminNumbers)) }}</textarea>
-                        <small class="form-text text-muted">
-                            Format: 628xxxxxxxxx (gunakan kode negara 62 untuk Indonesia)
-                        </small>
-                    </div>
-                    <button class="btn btn-primary" onclick="updateAdminNumbers()">
-                        <i class="fas fa-save"></i> Simpan Nomor Admin
-                    </button>
-                </div>
-            </div>
-        </div>        <!-- Parent Numbers Card -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-family"></i> Nomor Orang Tua
+                        <i class="fas fa-edit mr-2"></i> Template Notifikasi Kehadiran
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Info:</strong> Nomor orang tua diambil otomatis dari database. 
-                        Total: <span id="parent-count">{{ count($parentNumbers) }}</span> nomor aktif.
-                    </div>
-                    <div class="form-group">
-                        <label>Daftar Nomor Orang Tua Aktif:</label>
-                        <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
-                            @if(count($parentNumbers) > 0)
-                                @foreach($parentNumbers as $number)
-                                    <span class="badge badge-success mr-1 mb-1">{{ $number }}</span>
-                                @endforeach
-                            @else
-                                <small class="text-muted">Tidak ada nomor orang tua yang terdaftar</small>
-                            @endif
-                        </div>
-                        <small class="form-text text-muted">
-                            Nomor ini akan secara otomatis menerima notifikasi WhatsApp
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>    <!-- Test Functions Row -->
-    <div class="row mb-4">
-        <!-- Test Message Card -->
-        <div class="col-lg-6">
-            <div class="card shadow border-left-success">
-                <div class="card-header py-3 bg-success text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-paper-plane"></i> Test Pesan Individual
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="test-phone">Nomor Tujuan:</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">+62</span>
-                            </div>
-                            <input type="text" class="form-control" id="test-phone" placeholder="8123456789">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
-                                    <i class="fas fa-users"></i>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <h6 class="dropdown-header">Admin</h6>
-                                    @foreach($adminNumbers as $number)
-                                        <a class="dropdown-item" href="#" onclick="setPhoneNumber('{{ $number }}')">{{ $number }}</a>
-                                    @endforeach
-                                    @if(count($parentNumbers) > 0)
-                                        <div class="dropdown-divider"></div>
-                                        <h6 class="dropdown-header">Orang Tua</h6>
-                                        @foreach(array_slice($parentNumbers, 0, 5) as $number)
-                                            <a class="dropdown-item" href="#" onclick="setPhoneNumber('{{ $number }}')">{{ $number }}</a>
-                                        @endforeach
-                                        @if(count($parentNumbers) > 5)
-                                            <div class="dropdown-divider"></div>
-                                            <small class="dropdown-item-text text-muted">... dan {{ count($parentNumbers) - 5 }} nomor lainnya</small>
-                                        @endif
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        <small class="form-text text-muted">Masukkan nomor tanpa kode negara (+62)</small>
-                    </div>                    
-                    <div class="form-group">
-                        <label for="test-message">Pesan Test:</label>
-                        <textarea class="form-control" id="test-message" rows="3" placeholder="Ketik pesan test...">✅ Test koneksi WhatsApp dari {{ config('app.name', 'Sistem Absensi') }}
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Info:</strong> Template untuk notifikasi otomatis ke orang tua. 
+                        Gunakan variabel: <code>{nama_siswa}</code>, <code>{kelas}</code>, <code>{tanggal}</code>, <code>{status}</code>
+                    </div>                    <!-- Template Tabs -->
+                    <ul class="nav nav-tabs nav-fill" id="templateTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="hadir-tab" data-toggle="tab" href="#hadir" role="tab">
+                                <span class="d-none d-md-inline">✅ </span>Hadir
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="terlambat-tab" data-toggle="tab" href="#terlambat" role="tab">
+                                <span class="d-none d-md-inline">⚠️ </span>Terlambat
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="tidak-hadir-tab" data-toggle="tab" href="#tidak-hadir" role="tab">
+                                <span class="d-none d-md-inline">❌ </span><span class="d-inline d-md-none">Tidak</span><span class="d-none d-md-inline">Tidak Hadir</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="sakit-tab" data-toggle="tab" href="#sakit" role="tab">
+                                <span class="d-none d-md-inline">🏥 </span>Sakit
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="izin-tab" data-toggle="tab" href="#izin" role="tab">
+                                <span class="d-none d-md-inline">📄 </span>Izin
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="pulang-tab" data-toggle="tab" href="#pulang" role="tab">
+                                <span class="d-none d-md-inline">🔴 </span>Pulang
+                            </a>
+                        </li>
+                    </ul>
 
-Sistem WhatsApp berfungsi dengan baik! 🚀
-
-Waktu: {{ date('d/m/Y H:i') }}</textarea>
-                    </div>
-                    <button class="btn btn-success btn-block" onclick="sendTestMessage()">
-                        <i class="fas fa-paper-plane"></i> Kirim Test Pesan
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Connection Test Card -->
-        <div class="col-lg-6">
-            <div class="card shadow border-left-info">
-                <div class="card-header py-3 bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-heartbeat"></i> Test Koneksi System
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info mb-3">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Status System:</strong> Test koneksi dan ketersediaan service WhatsApp
-                    </div>
-                    
-                    <div class="mb-3">
-                        <small class="text-muted">Total Nomor Terdaftar:</small>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="border rounded p-2">
-                                    <div class="h5 mb-0 text-success">{{ count($adminNumbers) }}</div>
-                                    <small>Admin</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="border rounded p-2">
-                                    <div class="h5 mb-0 text-primary">{{ count($parentNumbers) }}</div>
-                                    <small>Orang Tua</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-info btn-block" onclick="testSystemHealth()">
-                        <i class="fas fa-heartbeat"></i> Test Kesehatan System
-                    </button>
-                    <button class="btn btn-outline-warning btn-block mt-2" onclick="sendTestNotification()">
-                        <i class="fas fa-broadcast-tower"></i> Test Broadcast ke Admin
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Test Attendance Notification Row -->
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card shadow border-left-warning">
-                <div class="card-header py-3 bg-warning text-dark">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-user-graduate"></i> Test Notifikasi Kehadiran ke Orang Tua
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Perhatian:</strong> Fitur ini akan mengirim notifikasi WhatsApp sesungguhnya ke nomor orang tua yang dipilih. 
-                        Pastikan template sudah sesuai sebelum melakukan test.
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="test-siswa">Pilih Siswa untuk Test:</label>
-                                <select class="form-control" id="test-siswa">
-                                    <option value="">-- Pilih Siswa --</option>
-                                    @foreach(\App\Models\Siswa::with('orangtua', 'kelas')->whereHas('orangtua', function($q) { $q->whereNotNull('no_telp')->where('no_telp', '!=', ''); })->limit(20)->get() as $siswa)
-                                        <option value="{{ $siswa->id }}" 
-                                                data-parent="{{ $siswa->orangtua->no_telp ?? '' }}" 
-                                                data-kelas="{{ $siswa->kelas->nama_kelas ?? '' }}"
-                                                data-nama="{{ $siswa->nama_lengkap }}">
-                                            {{ $siswa->nama_lengkap }} - {{ $siswa->kelas->nama_kelas ?? 'No Class' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <small class="text-muted" id="parent-phone-info"></small>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="test-template">Template Notifikasi:</label>
-                                <select class="form-control" id="test-template">
-                                    <option value="check_in">🟢 Hadir</option>
-                                    <option value="late">⚠️ Terlambat</option>
-                                    <option value="absent">❌ Tidak Hadir</option>
-                                    <option value="sick">🏥 Sakit</option>
-                                    <option value="permission">📄 Izin</option>
-                                    <option value="check_out">🔴 Pulang</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="test-keterangan">Keterangan Test:</label>
-                                <input type="text" class="form-control" id="test-keterangan" value="Test notifikasi dari sistem">
-                                <small class="text-muted">Keterangan ini akan muncul di pesan</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div id="preview-notification" class="border rounded p-3 bg-light" style="display: none;">
-                                <h6><i class="fas fa-eye"></i> Preview Pesan:</h6>
-                                <div id="preview-content" class="text-monospace small"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-center">
-                                <button class="btn btn-outline-info btn-lg" onclick="previewAttendanceNotification()">
-                                    <i class="fas fa-eye"></i> Preview Pesan
-                                </button>
-                                <button class="btn btn-warning btn-lg ml-2" onclick="sendTestAttendanceNotification()">
-                                    <i class="fas fa-bell"></i> Kirim Test ke Orang Tua
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Template Pesan Attendance Card -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow border-left-primary">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-edit"></i> Template Notifikasi Kehadiran Siswa
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Penting:</strong> Template ini digunakan untuk notifikasi otomatis kepada orang tua saat siswa absen.
-                        Gunakan variabel seperti <code>{nama_siswa}</code>, <code>{kelas}</code>, <code>{tanggal}</code>, <code>{status}</code>, dll.
-                    </div>
-
-                    <form id="attendance-templates-form">
-                        <div class="row">
-                            <!-- Template Hadir -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card border-success">
-                                    <div class="card-header bg-success text-white">
-                                        <strong>✅ Template Hadir</strong>
-                                    </div>
-                                    <div class="card-body">                                        <textarea class="form-control" name="check_in" rows="6" placeholder="Template untuk siswa hadir...">{{ \App\Models\Setting::getSetting('whatsapp_template_check_in', '🟢 Notifikasi Kehadiran dari {school_name}
+                    <div class="tab-content" id="templateTabsContent">
+                        <!-- Hadir Tab -->
+                        <div class="tab-pane fade show active" id="hadir" role="tabpanel">
+                            <div class="mt-3">
+                                <textarea class="form-control" name="check_in" rows="4">{{ \App\Models\Setting::getSetting('whatsapp_template_check_in', '🟢 Notifikasi Kehadiran dari {school_name}
 
 👤 *Nama*: {nama_siswa}
 🏫 *Kelas*: {kelas}
@@ -361,17 +362,13 @@ Waktu: {{ date('d/m/Y H:i') }}</textarea>
 📝 *Keterangan*: {keterangan}
 
 Terima kasih atas perhatiannya.') }}</textarea>
-                                    </div>
-                                </div>
                             </div>
+                        </div>
 
-                            <!-- Template Terlambat -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card border-warning">
-                                    <div class="card-header bg-warning text-dark">
-                                        <strong>⚠️ Template Terlambat</strong>
-                                    </div>
-                                    <div class="card-body">                                        <textarea class="form-control" name="late" rows="6" placeholder="Template untuk siswa terlambat...">{{ \App\Models\Setting::getSetting('whatsapp_template_late', '⚠️ Notifikasi Keterlambatan dari {school_name}
+                        <!-- Terlambat Tab -->
+                        <div class="tab-pane fade" id="terlambat" role="tabpanel">
+                            <div class="mt-3">
+                                <textarea class="form-control" name="late" rows="4">{{ \App\Models\Setting::getSetting('whatsapp_template_late', '⚠️ Notifikasi Keterlambatan dari {school_name}
 
 👤 *Nama*: {nama_siswa}
 🏫 *Kelas*: {kelas}
@@ -381,20 +378,13 @@ Terima kasih atas perhatiannya.') }}</textarea>
 📝 *Keterangan*: {keterangan}
 
 Mohon perhatian untuk kedisiplinan anak.') }}</textarea>
-📝 *Keterangan*: {keterangan}
-
-Mohon perhatian untuk kedisiplinan anak.') }}</textarea>
-                                    </div>
-                                </div>
                             </div>
+                        </div>
 
-                            <!-- Template Tidak Hadir -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card border-danger">
-                                    <div class="card-header bg-danger text-white">
-                                        <strong>❌ Template Tidak Hadir (Alpha)</strong>
-                                    </div>
-                                    <div class="card-body">                                        <textarea class="form-control" name="absent" rows="6" placeholder="Template untuk siswa tidak hadir...">{{ \App\Models\Setting::getSetting('whatsapp_template_absent', '❌ Notifikasi Ketidakhadiran dari {school_name}
+                        <!-- Tidak Hadir Tab -->
+                        <div class="tab-pane fade" id="tidak-hadir" role="tabpanel">
+                            <div class="mt-3">
+                                <textarea class="form-control" name="absent" rows="4">{{ \App\Models\Setting::getSetting('whatsapp_template_absent', '❌ Notifikasi Ketidakhadiran dari {school_name}
 
 👤 *Nama*: {nama_siswa}
 🏫 *Kelas*: {kelas}
@@ -403,17 +393,13 @@ Mohon perhatian untuk kedisiplinan anak.') }}</textarea>
 📝 *Keterangan*: {keterangan}
 
 Mohon konfirmasi mengenai ketidakhadiran anak.') }}</textarea>
-                                    </div>
-                                </div>
                             </div>
+                        </div>
 
-                            <!-- Template Sakit -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card border-info">
-                                    <div class="card-header bg-info text-white">
-                                        <strong>🏥 Template Sakit</strong>
-                                    </div>
-                                    <div class="card-body">                                        <textarea class="form-control" name="sick" rows="6" placeholder="Template untuk siswa sakit...">{{ \App\Models\Setting::getSetting('whatsapp_template_sick', '🏥 Notifikasi Sakit dari {school_name}
+                        <!-- Sakit Tab -->
+                        <div class="tab-pane fade" id="sakit" role="tabpanel">
+                            <div class="mt-3">
+                                <textarea class="form-control" name="sick" rows="4">{{ \App\Models\Setting::getSetting('whatsapp_template_sick', '🏥 Notifikasi Sakit dari {school_name}
 
 👤 *Nama*: {nama_siswa}
 🏫 *Kelas*: {kelas}
@@ -422,17 +408,13 @@ Mohon konfirmasi mengenai ketidakhadiran anak.') }}</textarea>
 📝 *Keterangan*: {keterangan}
 
 Semoga lekas sembuh.') }}</textarea>
-                                    </div>
-                                </div>
                             </div>
+                        </div>
 
-                            <!-- Template Izin -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card border-secondary">
-                                    <div class="card-header bg-secondary text-white">
-                                        <strong>📄 Template Izin</strong>
-                                    </div>
-                                    <div class="card-body">                                        <textarea class="form-control" name="permission" rows="6" placeholder="Template untuk siswa izin...">{{ \App\Models\Setting::getSetting('whatsapp_template_permission', '📄 Notifikasi Izin dari {school_name}
+                        <!-- Izin Tab -->
+                        <div class="tab-pane fade" id="izin" role="tabpanel">
+                            <div class="mt-3">
+                                <textarea class="form-control" name="permission" rows="4">{{ \App\Models\Setting::getSetting('whatsapp_template_permission', '📄 Notifikasi Izin dari {school_name}
 
 👤 *Nama*: {nama_siswa}
 🏫 *Kelas*: {kelas}
@@ -441,17 +423,13 @@ Semoga lekas sembuh.') }}</textarea>
 📝 *Keterangan*: {keterangan}
 
 Terima kasih atas pemberitahuannya.') }}</textarea>
-                                    </div>
-                                </div>
                             </div>
+                        </div>
 
-                            <!-- Template Check Out -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card border-dark">
-                                    <div class="card-header bg-dark text-white">
-                                        <strong>🔴 Template Pulang</strong>
-                                    </div>
-                                    <div class="card-body">                                        <textarea class="form-control" name="check_out" rows="6" placeholder="Template untuk siswa pulang...">{{ \App\Models\Setting::getSetting('whatsapp_template_check_out', '🔴 Notifikasi Pulang dari {school_name}
+                        <!-- Pulang Tab -->
+                        <div class="tab-pane fade" id="pulang" role="tabpanel">
+                            <div class="mt-3">
+                                <textarea class="form-control" name="check_out" rows="4">{{ \App\Models\Setting::getSetting('whatsapp_template_check_out', '🔴 Notifikasi Pulang dari {school_name}
 
 👤 *Nama*: {nama_siswa}
 🏫 *Kelas*: {kelas}
@@ -461,45 +439,42 @@ Terima kasih atas pemberitahuannya.') }}</textarea>
 📝 *Keterangan*: {keterangan}
 
 Anak telah pulang dengan selamat.') }}</textarea>
-                                    </div>
-                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="text-center">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="updateAttendanceTemplates()">
-                                <i class="fas fa-save"></i> Simpan Template Kehadiran
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-lg ml-2" onclick="resetTemplatesToDefault()">
-                                <i class="fas fa-undo"></i> Reset ke Default
-                            </button>
-                        </div>
-                    </form>
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-primary" onclick="updateAttendanceTemplates()">
+                            <i class="fas fa-save"></i> Simpan Template
+                        </button>
+                        <button type="button" class="btn btn-secondary ml-2" onclick="resetTemplatesToDefault()">
+                            <i class="fas fa-undo"></i> Reset Default
+                        </button>
+                    </div>
 
-                    <!-- Variabel yang tersedia -->
-                    <div class="row mt-4">
+                    <!-- Available Variables -->
+                    <div class="row mt-3">
                         <div class="col-12">
                             <div class="card bg-light">
-                                <div class="card-header">
-                                    <strong><i class="fas fa-info-circle"></i> Variabel Yang Tersedia</strong>
-                                </div>
-                                <div class="card-body">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title mb-2"><i class="fas fa-info-circle"></i> Variabel Tersedia</h6>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <ul class="list-unstyled">
-                                                <li><code>{school_name}</code> - Nama sekolah</li>
-                                                <li><code>{nama_siswa}</code> - Nama lengkap siswa</li>
-                                                <li><code>{kelas}</code> - Kelas siswa</li>
-                                                <li><code>{tanggal}</code> - Tanggal absensi</li>
-                                            </ul>
+                                            <small>
+                                                <code>{school_name}</code> - Nama sekolah<br>
+                                                <code>{nama_siswa}</code> - Nama siswa<br>
+                                                <code>{kelas}</code> - Kelas siswa<br>
+                                                <code>{tanggal}</code> - Tanggal absensi
+                                            </small>
                                         </div>
                                         <div class="col-md-6">
-                                            <ul class="list-unstyled">
-                                                <li><code>{waktu}</code> - Waktu absensi</li>
-                                                <li><code>{status}</code> - Status kehadiran</li>
-                                                <li><code>{keterangan}</code> - Keterangan tambahan</li>
-                                                <li><code>{mata_pelajaran}</code> - Mata pelajaran</li>
-                                            </ul>
+                                            <small>
+                                                <code>{waktu}</code> - Waktu absensi<br>
+                                                <code>{status}</code> - Status kehadiran<br>
+                                                <code>{keterangan}</code> - Keterangan<br>
+                                                <code>{mata_pelajaran}</code> - Mata pelajaran
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
@@ -515,42 +490,56 @@ Anak telah pulang dengan selamat.') }}</textarea>
 
 @section('scripts')
 <script>
-// Test alert to verify scripts are loading
-console.log('WhatsApp admin scripts loaded successfully');
-
-$(document).ready(function() {
-    // Auto refresh status every 30 seconds
-    setInterval(refreshStatus, 30000);
-    
-    // Handle siswa selection change
-    $('#test-siswa').on('change', function() {
-        const selectedOption = $(this).find('option:selected');
-        const parentPhone = selectedOption.data('parent');
-        
-        if (parentPhone) {
-            $('#parent-phone-info').text(`Nomor Orang Tua: ${parentPhone}`).removeClass('text-muted').addClass('text-success');
-        } else {
-            $('#parent-phone-info').text('').removeClass('text-success').addClass('text-muted');
-        }
-    });
+// Setup AJAX untuk mengurangi console logging
+$.ajaxSetup({
+    silent: true // tidak menampilkan log
 });
 
-function showLoading() {
-    $('#loadingModal').modal('show');
-    // Auto-close loading modal after 15 seconds as a failsafe
-    if (window.loadingModalTimeout) clearTimeout(window.loadingModalTimeout);
-    window.loadingModalTimeout = setTimeout(() => {
-        $('#loadingModal').modal('hide');
-        window.loadingModalTimeout = null;
-    }, 15000);
+$(document).ready(function() {
+    startStatusMonitoring();
+    initializeTestTracking();
+});
+
+// Test tracking functionality
+let testStats = {
+    today: 0,
+    success: 0,
+    failed: 0
+};
+
+function initializeTestTracking() {
+    const today = new Date().toDateString();
+    const savedStats = localStorage.getItem('whatsapp_test_stats_' + today);
+    
+    if (savedStats) {
+        testStats = JSON.parse(savedStats);
+    } else {
+        testStats = { today: 0, success: 0, failed: 0 };
+    }
+    
+    updateTestStatsDisplay();
 }
 
-function hideLoading() {
-    $('#loadingModal').modal('hide');
-    if (window.loadingModalTimeout) {
-        clearTimeout(window.loadingModalTimeout);
-        window.loadingModalTimeout = null;
+function updateTestStats(success) {
+    testStats.today++;
+    if (success) {
+        testStats.success++;
+    } else {
+        testStats.failed++;
     }
+    
+    const today = new Date().toDateString();
+    localStorage.setItem('whatsapp_test_stats_' + today, JSON.stringify(testStats));
+    
+    updateTestStatsDisplay();
+}
+
+function updateTestStatsDisplay() {
+    $('#success-tests').text(testStats.success);
+    $('#failed-tests').text(testStats.failed);
+    
+    const successRate = testStats.today > 0 ? Math.round((testStats.success / testStats.today) * 100) : 100;
+    $('#success-rate').text(successRate + '%');
 }
 
 function showAlert(type, message) {
@@ -564,13 +553,15 @@ function showAlert(type, message) {
     `;
     $('.container-fluid').prepend(alertHtml);
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
         $('.alert').fadeOut();
     }, 5000);
 }
 
 function refreshStatus() {
+    const spinner = $('#status-spinner');
+    spinner.show();
+    
     $.get('/admin/whatsapp/status')
         .done(function(response) {
             if (response.success) {
@@ -579,33 +570,156 @@ function refreshStatus() {
         })
         .fail(function() {
             console.error('Failed to refresh status');
+        })
+        .always(function() {
+            spinner.hide();
+        });
+}
+
+function updateQuickStats() {
+    $.get('/admin/whatsapp/stats')
+        .done(function(response) {
+            if (response.success) {
+                $('#total-sent').text(response.data.total_sent || 0);
+                $('#success-rate').text((response.data.success_rate || 0) + '%');
+                $('#uptime').text(response.data.uptime || '0h 0m');
+            }
+        })
+        .fail(function() {
+            console.log('Stats update failed');
+        });
+}
+
+function startStatusMonitoring() {
+    // Update stats every 30 seconds
+    setInterval(updateQuickStats, 30000);
+    
+    // Initial update
+    updateQuickStats();
+    
+    // Check connection status every 10 seconds
+    setInterval(function() {
+        $.get('/admin/whatsapp/status')
+            .done(function(response) {
+                if (response.success) {
+                    const currentStatus = response.connected;
+                    
+                    if (currentStatus !== window.lastKnownStatus) {
+                        window.lastKnownStatus = currentStatus;
+                        updateConnectionStatus(currentStatus);
+                        
+                        if (currentStatus) {
+                            showAlert('success', 'WhatsApp connection restored!');
+                        } else {
+                            showAlert('warning', 'WhatsApp connection lost. Please check your connection.');
+                        }
+                    }
+                }
+            })
+            .fail(function() {
+                console.log('Status monitoring request failed');
+            });
+    }, 10000);
+    
+    // Initial status check
+    $.get('/admin/whatsapp/status')
+        .done(function(response) {
+            if (response.success) {
+                window.lastKnownStatus = response.connected;
+                updateConnectionStatus(response.connected);
+            }
         });
 }
 
 function updateConnectionStatus(isConnected) {
-    const badge = $('#connection-badge');
+    const statusCard = $('#connection-status-card');
     const qrSection = $('#qr-code-section');
-    const connectedSection = $('#connected-section');
+    const lastUpdate = $('#last-update');
+    
+    // Update last update time with Indonesian format
+    const now = new Date();
+    const jakartaTime = now.toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta',
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    lastUpdate.text(`Last update: ${jakartaTime}`);
     
     if (isConnected) {
-        badge.html('<span class="badge badge-success"><i class="fas fa-check-circle"></i> Terhubung</span>');
+        statusCard.html(`
+            <div class="status-card-connected">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="status-icon status-icon-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h5 class="mb-1 font-weight-bold text-success">Terhubung</h5>
+                            <p class="mb-0 text-muted small">WhatsApp Gateway aktif dan siap digunakan</p>
+                            <small class="text-success">
+                                <i class="fas fa-clock mr-1"></i>
+                                Connected since: <span id="connection-time">${jakartaTime}</span>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="status-actions">
+                        <button class="btn btn-outline-danger btn-sm" onclick="disconnectWhatsApp()">
+                            <i class="fas fa-unlink mr-1"></i> Disconnect
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        `);
         qrSection.hide();
-        connectedSection.show();
+        updateQuickStats();
     } else {
-        badge.html('<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Tidak Terhubung</span>');
+        statusCard.html(`
+            <div class="status-card-disconnected">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="status-icon status-icon-danger">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h5 class="mb-1 font-weight-bold text-danger">Tidak Terhubung</h5>
+                            <p class="mb-0 text-muted small">Silakan scan QR Code untuk menghubungkan WhatsApp</p>
+                            <small class="text-danger">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Service tidak aktif
+                            </small>
+                        </div>
+                    </div>
+                    <div class="status-actions">
+                        <button class="btn btn-primary btn-sm" onclick="generateQRCode()">
+                            <i class="fas fa-qrcode mr-1"></i> Generate QR
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+        `);
         qrSection.show();
-        connectedSection.hide();
     }
 }
 
 function generateQRCode() {
-    showLoading();
-    
     $.get('/admin/whatsapp/qr-code')
         .done(function(response) {
-            hideLoading();
             if (response.success) {
-                // Handle both string and object responses for QR code
                 let qrCodeSrc = '';
                 if (typeof response.qr_code === 'string') {
                     qrCodeSrc = response.qr_code;
@@ -615,14 +729,21 @@ function generateQRCode() {
                 
                 if (qrCodeSrc) {
                     $('#qr-code-container').html(`
-                        <div class="text-center">
-                            <img src="${qrCodeSrc}" alt="QR Code" class="img-fluid" style="max-width: 300px; border: 1px solid #ddd; padding: 10px; background: white;">
-                            <p class="mt-2 text-muted">Scan QR Code ini dengan WhatsApp Anda</p>
-                            <small class="text-info">QR Code akan expire dalam 2 menit</small>
+                        <div class="qr-code-display">
+                            <div class="qr-code-wrapper">
+                                <img src="${qrCodeSrc}" alt="QR Code" class="qr-code-image">
+                            </div>
+                            <div class="qr-code-info">
+                                <h6 class="font-weight-bold text-primary mb-2">
+                                    <i class="fab fa-whatsapp mr-2"></i>Scan dengan WhatsApp
+                                </h6>
+                                <p class="text-muted small mb-3">
+                                    QR Code akan expire dalam 2 menit
+                                </p>
+                            </div>
                         </div>
                     `);
                     
-                    // Start polling for connection status
                     const pollInterval = setInterval(() => {
                         $.get('/admin/whatsapp/status')
                             .done(function(statusResponse) {
@@ -633,15 +754,12 @@ function generateQRCode() {
                                 }
                             })
                             .fail(function() {
-                                // Silently handle polling errors
                                 console.log('Status polling failed');
                             });
                     }, 2000);
                     
-                    // Stop polling after 2 minutes
                     setTimeout(() => {
                         clearInterval(pollInterval);
-                        console.log('QR code polling stopped after 2 minutes');
                     }, 120000);
                 } else {
                     showAlert('danger', 'QR Code tidak ditemukan dalam response');
@@ -651,19 +769,14 @@ function generateQRCode() {
             }
         })
         .fail(function(xhr, status, error) {
-            hideLoading();
-            console.error('QR Code request failed:', xhr.responseText);
             showAlert('danger', 'Gagal mengambil QR Code: ' + (xhr.responseJSON?.message || error));
         });
 }
 
 function disconnectWhatsApp() {
     if (confirm('Apakah Anda yakin ingin memutuskan koneksi WhatsApp?')) {
-        showLoading();
-        
         $.post('/admin/whatsapp/disconnect')
             .done(function(response) {
-                hideLoading();
                 if (response.success) {
                     updateConnectionStatus(false);
                     showAlert('success', response.message);
@@ -672,7 +785,6 @@ function disconnectWhatsApp() {
                 }
             })
             .fail(function() {
-                hideLoading();
                 showAlert('danger', 'Gagal memutuskan koneksi');
             });
     }
@@ -685,14 +797,11 @@ function updateGateway() {
         return;
     }
     
-    showLoading();
-    
     $.post('/admin/whatsapp/gateway', {
         gateway_url: gatewayUrl,
         _token: '{{ csrf_token() }}'
     })
     .done(function(response) {
-        hideLoading();
         if (response.success) {
             showAlert('success', response.message);
         } else {
@@ -700,7 +809,6 @@ function updateGateway() {
         }
     })
     .fail(function() {
-        hideLoading();
         showAlert('danger', 'Gagal mengupdate gateway URL');
     });
 }
@@ -712,14 +820,11 @@ function updateAdminNumbers() {
         return;
     }
     
-    showLoading();
-    
     $.post('/admin/whatsapp/admin-numbers', {
         admin_numbers: adminNumbers,
         _token: '{{ csrf_token() }}'
     })
     .done(function(response) {
-        hideLoading();
         if (response.success) {
             showAlert('success', response.message);
             if (response.valid_numbers) {
@@ -730,78 +835,128 @@ function updateAdminNumbers() {
         }
     })
     .fail(function() {
-        hideLoading();
         showAlert('danger', 'Gagal mengupdate nomor admin');
     });
 }
 
-function updateTemplates() {
-    const templates = {
-        clock_in_template: $('#clock-in-template').val(),
-        clock_out_template: $('#clock-out-template').val(),
-        late_template: $('#late-template').val(),
-        absent_template: $('#absent-template').val(),
-        _token: '{{ csrf_token() }}'
-    };
-    
-    showLoading();
-    
-    $.post('/admin/whatsapp/templates', templates)
-        .done(function(response) {
-            hideLoading();
-            if (response.success) {
-                showAlert('success', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
-        })
-        .fail(function() {
-            hideLoading();
-            showAlert('danger', 'Gagal mengupdate template pesan');
-        });
-}
-
-// Set phone number from dropdown
-function setPhoneNumber(phoneNumber) {
-    // Remove the +62 prefix if present since we have +62 in the input group
-    const cleanNumber = phoneNumber.replace(/^\+?62/, '');
-    $('#test-phone').val(cleanNumber);
-}
-
-// Test system health and connectivity
 function testSystemHealth() {
-    showLoading();
-    
+    const resultsDiv = $('#test-results');
+    resultsDiv.show().find('.alert')
+        .removeClass('alert-success alert-danger alert-warning')
+        .addClass('alert-info')
+        .find('#test-result-message')
+        .html('Running system health check...');
+
     $.get('/admin/whatsapp/system-health')
         .done(function(response) {
-            hideLoading();
             if (response.success) {
-                let statusHtml = `
-                    <div class="alert alert-success">
-                        <h6><i class="fas fa-check-circle"></i> Hasil Test Kesehatan System</h6>
-                        <ul class="mb-0">
-                            <li>Koneksi WhatsApp: ${response.data.whatsapp_connected ? '✅ Terhubung' : '❌ Tidak Terhubung'}</li>
-                            <li>Gateway Status: ${response.data.gateway_status ? '✅ Online' : '❌ Offline'}</li>
-                            <li>Database: ${response.data.database_connected ? '✅ Terhubung' : '❌ Error'}</li>
-                            <li>Total Admin: ${response.data.admin_count} nomor</li>
-                            <li>Total Orang Tua: ${response.data.parent_count} nomor</li>
-                        </ul>
-                    </div>
-                `;
+                const data = response.data;
+                const healthStatus = {
+                    all_good: data.db_connected && data.whatsapp_connected,
+                    alert_type: data.db_connected && data.whatsapp_connected ? 'success' : 'warning',
+                    message: `
+                        <strong>System Health Report:</strong><br>
+                        Database: ${data.db_connected ? '✅' : '❌'}<br>
+                        WhatsApp: ${data.whatsapp_connected ? '✅' : '❌'}<br>
+                        Success Rate: ${data.success_rate}%<br>
+                        Active Admins: ${data.admin_count}<br>
+                        Uptime: ${data.uptime}
+                    `
+                };
+
+                resultsDiv.find('.alert')
+                    .removeClass('alert-info alert-danger alert-warning')
+                    .addClass(`alert-${healthStatus.alert_type}`)
+                    .find('#test-result-message')
+                    .html(healthStatus.message);
+
+                resultsDiv.find('.result-icon i')
+                    .removeClass('fa-info-circle fa-times-circle')
+                    .addClass(healthStatus.all_good ? 'fa-check-circle' : 'fa-exclamation-triangle');
                 
-                // Show the result in a modal or alert
-                showAlert('info', statusHtml);
+                updateTestStats(true);
             } else {
-                showAlert('danger', response.message || 'Test kesehatan system gagal');
+                throw new Error(response.message || 'Health check failed');
             }
         })
         .fail(function(xhr) {
-            hideLoading();
-            showAlert('danger', 'Gagal melakukan test kesehatan system: ' + (xhr.responseJSON?.message || 'Network error'));
+            const error = xhr.responseJSON?.message || 'Failed to complete system health check';
+            resultsDiv.find('.alert')
+                .removeClass('alert-info alert-success alert-warning')
+                .addClass('alert-danger')
+                .find('#test-result-message')
+                .text(error);
+
+            resultsDiv.find('.result-icon i')
+                .removeClass('fa-info-circle fa-check-circle')
+                .addClass('fa-times-circle');
+            
+            updateTestStats(false);
         });
 }
 
-// Update attendance templates
+function sendTestMessage() {
+    let phoneNumber = $('#test-phone').val().trim();
+    const message = $('#test-message').val().trim();
+    
+    if (!phoneNumber || !message) {
+        showAlert('warning', 'Nomor tujuan dan pesan harus diisi');
+        return;
+    }
+    
+    phoneNumber = phoneNumber.replace(/[^\d]/g, '');
+    
+    if (!phoneNumber.startsWith('62')) {
+        if (phoneNumber.startsWith('0')) {
+            phoneNumber = '62' + phoneNumber.substring(1);
+        } else if (phoneNumber.startsWith('8')) {
+            phoneNumber = '62' + phoneNumber;
+        }
+    }
+    
+    $.post('/admin/whatsapp/test-message', {
+        phone_number: phoneNumber,
+        message: message,
+        _token: '{{ csrf_token() }}'
+    })
+    .done(function(response) {
+        if (response.success) {
+            showAlert('success', `Pesan berhasil dikirim ke +${phoneNumber}!`);
+            updateTestStats(true);
+        } else {
+            showAlert('danger', response.message || 'Gagal mengirim pesan');
+            updateTestStats(false);
+        }
+    })
+    .fail(function(xhr) {
+        showAlert('danger', 'Gagal mengirim pesan test: ' + (xhr.responseJSON?.message || 'Network error'));
+        updateTestStats(false);
+    });
+}
+
+function sendTestNotification() {
+    if (!confirm('Kirim test notifikasi ke semua admin WhatsApp?')) {
+        return;
+    }
+    
+    $.post('/admin/whatsapp/test-notification', {
+        _token: '{{ csrf_token() }}'
+    })
+    .done(function(response) {
+        if (response.success) {
+            showAlert('success', response.message || 'Test notifikasi berhasil dikirim ke admin!');
+            updateTestStats(true);
+        } else {
+            showAlert('danger', response.message || 'Gagal mengirim test notifikasi');
+            updateTestStats(false);
+        }
+    })
+    .fail(function(xhr) {
+        showAlert('danger', 'Gagal mengirim test notifikasi: ' + (xhr.responseJSON?.message || 'Network error'));
+        updateTestStats(false);
+    });
+}
+
 function updateAttendanceTemplates() {
     const templates = {
         check_in: $('textarea[name="check_in"]').val(),
@@ -813,11 +968,8 @@ function updateAttendanceTemplates() {
         _token: '{{ csrf_token() }}'
     };
     
-    showLoading();
-    
     $.post('/admin/whatsapp/attendance-templates', templates)
         .done(function(response) {
-            hideLoading();
             if (response.success) {
                 showAlert('success', 'Template notifikasi kehadiran berhasil disimpan!');
             } else {
@@ -825,23 +977,17 @@ function updateAttendanceTemplates() {
             }
         })
         .fail(function(xhr) {
-            hideLoading();
             showAlert('danger', 'Gagal menyimpan template: ' + (xhr.responseJSON?.message || 'Network error'));
         });
 }
 
-// Reset templates to default
 function resetTemplatesToDefault() {
-    if (confirm('Apakah Anda yakin ingin mereset semua template ke pengaturan default? Perubahan yang belum disimpan akan hilang.')) {
-        showLoading();
-        
+    if (confirm('Apakah Anda yakin ingin mereset semua template ke pengaturan default?')) {
         $.post('/admin/whatsapp/reset-templates', {
             _token: '{{ csrf_token() }}'
         })
         .done(function(response) {
-            hideLoading();
             if (response.success) {
-                // Reload the page to show default templates
                 showAlert('success', 'Template berhasil direset ke default. Halaman akan dimuat ulang...');
                 setTimeout(() => {
                     location.reload();
@@ -851,254 +997,462 @@ function resetTemplatesToDefault() {
             }
         })
         .fail(function(xhr) {
-            hideLoading();
             showAlert('danger', 'Gagal mereset template: ' + (xhr.responseJSON?.message || 'Network error'));
         });
     }
 }
-
-// Enhanced sendTestMessage with better phone formatting
-function sendTestMessage() {
-    let phoneNumber = $('#test-phone').val().trim();
-    const message = $('#test-message').val().trim();
-    
-    if (!phoneNumber || !message) {
-        showAlert('warning', 'Nomor tujuan dan pesan harus diisi');
-        return;
-    }
-    
-    // Format phone number properly
-    phoneNumber = phoneNumber.replace(/[^\d]/g, ''); // Remove non-digits
-    
-    // Add +62 prefix if not present
-    if (!phoneNumber.startsWith('62')) {
-        if (phoneNumber.startsWith('0')) {
-            phoneNumber = '62' + phoneNumber.substring(1);
-        } else if (phoneNumber.startsWith('8')) {
-            phoneNumber = '62' + phoneNumber;
-        }
-    }
-    
-    showLoading();
-    
-    $.post('/admin/whatsapp/test-message', {
-        phone_number: phoneNumber,
-        message: message,
-        _token: '{{ csrf_token() }}'
-    })
-    .done(function(response) {
-        hideLoading();
-        if (response.success) {
-            showAlert('success', `Pesan berhasil dikirim ke +${phoneNumber}!`);
-        } else {
-            showAlert('danger', response.message || 'Gagal mengirim pesan');
-        }
-    })
-    .fail(function(xhr) {
-        hideLoading();
-        showAlert('danger', 'Gagal mengirim pesan test: ' + (xhr.responseJSON?.message || 'Network error'));
-    });
-}
-
-// Send test notification to admins
-function sendTestNotification() {
-    if (!confirm('Kirim test notifikasi ke semua admin WhatsApp?')) {
-        return;
-    }
-    
-    showLoading();
-    
-    $.post('/admin/whatsapp/test-notification', {
-        _token: '{{ csrf_token() }}'
-    })
-    .done(function(response) {
-        hideLoading();
-        if (response.success) {
-            showAlert('success', response.message || 'Test notifikasi berhasil dikirim ke admin!');
-        } else {
-            showAlert('danger', response.message || 'Gagal mengirim test notifikasi');
-        }
-    })
-    .fail(function(xhr) {
-        hideLoading();
-        showAlert('danger', 'Gagal mengirim test notifikasi: ' + (xhr.responseJSON?.message || 'Network error'));
-    });
-}
-
-// Preview attendance notification
-function previewAttendanceNotification() {
-    const siswaId = $('#test-siswa').val();
-    const templateType = $('#test-template').val();
-    const keterangan = $('#test-keterangan').val().trim();
-    
-    if (!siswaId || !templateType) {
-        showAlert('warning', 'Pilih siswa dan template notifikasi terlebih dahulu');
-        return;
-    }
-    
-    const siswa = $('#test-siswa option:selected');
-    const namaSiswa = siswa.data('nama');
-    const kelasSiswa = siswa.data('kelas');
-    const parentPhone = siswa.data('parent');
-    
-    let message = '';
-    switch (templateType) {
-        case 'check_in':
-            message = `🟢 Notifikasi Kehadiran dari {school_name}
-
-👤 *Nama*: ${namaSiswa}
-🏫 *Kelas*: ${kelasSiswa}
-📅 *Tanggal*: {tanggal}
-🕐 *Waktu*: {waktu}
-📚 *Mata Pelajaran*: {mata_pelajaran}
-🕐 *Jam Ke*: {jam_ke} ({jam_mulai}-{jam_selesai})
-✅ *Status*: Hadir
-📝 *Keterangan*: ${keterangan}
-
-Terima kasih atas perhatiannya.`;
-            break;
-        case 'late':
-            message = `⚠️ Notifikasi Keterlambatan dari {school_name}
-
-👤 *Nama*: ${namaSiswa}
-🏫 *Kelas*: ${kelasSiswa}
-📅 *Tanggal*: {tanggal}
-🕐 *Waktu*: {waktu}
-📚 *Mata Pelajaran*: {mata_pelajaran}
-🕐 *Jam Ke*: {jam_ke} ({jam_mulai}-{jam_selesai})
-⏰ *Status*: Terlambat
-📝 *Keterangan*: ${keterangan}
-
-Mohon perhatian untuk kedisiplinan anak.`;
-            break;
-        case 'absent':
-            message = `❌ Notifikasi Ketidakhadiran dari {school_name}
-
-👤 *Nama*: ${namaSiswa}
-🏫 *Kelas*: ${kelasSiswa}
-📅 *Tanggal*: {tanggal}
-📚 *Mata Pelajaran*: {mata_pelajaran}
-🕐 *Jam Ke*: {jam_ke} ({jam_mulai}-{jam_selesai})
-❌ *Status*: Tidak Hadir
-📝 *Keterangan*: ${keterangan}
-
-Mohon konfirmasi mengenai ketidakhadiran anak.`;
-            break;
-        case 'sick':
-            message = `🏥 Notifikasi Sakit dari {school_name}
-
-👤 *Nama*: ${namaSiswa}
-🏫 *Kelas*: ${kelasSiswa}
-📅 *Tanggal*: {tanggal}
-🏥 *Status*: Sakit
-📝 *Keterangan*: ${keterangan}
-
-Semoga lekas sembuh.`;
-            break;
-        case 'permission':
-            message = `📄 Notifikasi Izin dari {school_name}
-
-👤 *Nama*: ${namaSiswa}
-🏫 *Kelas*: ${kelasSiswa}
-📅 *Tanggal*: {tanggal}
-📄 *Status*: Izin
-📝 *Keterangan*: ${keterangan}
-
-Terima kasih atas pemberitahuannya.`;
-            break;
-        case 'check_out':
-            message = `🔴 Notifikasi Pulang dari {school_name}
-
-👤 *Nama*: ${namaSiswa}
-🏫 *Kelas*: ${kelasSiswa}
-📅 *Tanggal*: {tanggal}
-🕐 *Waktu*: {waktu}
-🔴 *Status*: Pulang
-📝 *Keterangan*: ${keterangan}
-
-Anak telah pulang dengan selamat.`;
-            break;
-        default:
-            message = 'Template not recognized';
-    }
-      // Replace placeholders with actual values
-    const currentDate = new Date().toLocaleDateString('id-ID');
-    const currentTime = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
-    const schoolName = '{{ config("app.name", "Sistem Absensi") }}';
-    
-    message = message
-        .replace('{school_name}', schoolName)
-        .replace('{tanggal}', currentDate)
-        .replace('{waktu}', currentTime);
-    
-    // Show preview with additional info
-    const previewHtml = `
-        <div class="mb-2">
-            <strong>Kepada:</strong> ${parentPhone}<br>
-            <strong>Siswa:</strong> ${namaSiswa} (${kelasSiswa})<br>
-            <strong>Template:</strong> ${templateType.toUpperCase()}
-        </div>
-        <div class="border-top pt-2">
-            <pre style="white-space: pre-wrap; font-family: inherit;">${message}</pre>
-        </div>
-    `;
-    
-    $('#preview-content').html(previewHtml);
-    $('#preview-notification').show();
-}
-
-// Send test attendance notification
-function sendTestAttendanceNotification() {
-    const siswaId = $('#test-siswa').val();
-    const templateType = $('#test-template').val();
-    const keterangan = $('#test-keterangan').val().trim();
-    
-    if (!siswaId || !templateType) {
-        showAlert('warning', 'Pilih siswa dan template notifikasi terlebih dahulu');
-        return;
-    }
-    
-    const siswa = $('#test-siswa option:selected');
-    const parentPhone = siswa.data('parent');
-    const siswaName = siswa.data('nama');
-    
-    if (!parentPhone) {
-        showAlert('warning', 'Nomor orang tua tidak ditemukan untuk siswa ini');
-        return;
-    }
-    
-    if (confirm(`Anda akan mengirim notifikasi ${templateType} ke nomor ${parentPhone} untuk siswa ${siswaName}. Lanjutkan?`)) {
-        showLoading();
-        
-        $.post('/admin/whatsapp/test-attendance-notification', {
-            siswa_id: siswaId,
-            template_type: templateType,
-            keterangan: keterangan,
-            time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'}),
-            date: new Date().toLocaleDateString('id-ID'),
-            location: 'Sekolah',
-            late_duration: '15 menit',
-            _token: '{{ csrf_token() }}'
-        })
-        .done(function(response) {
-            hideLoading();
-            if (response.success) {
-                showAlert('success', `✅ ${response.message} ke nomor ${parentPhone}!`);
-            } else {
-                showAlert('danger', response.message || 'Gagal mengirim notifikasi kehadiran');
-            }
-        })
-        .fail(function(xhr) {
-            hideLoading();
-            let message = 'Gagal mengirim notifikasi kehadiran';
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                message += ': ' + xhr.responseJSON.message;
-            } else if (xhr.status === 0) {
-                message += ': Tidak dapat terhubung ke server';
-            }
-            showAlert('danger', message);
-        });
-    }
-}
 </script>
+
+<style>
+.status-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid #e3e6f0;
+    transition: all 0.3s ease;
+}
+
+.status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.status-card-connected {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 1px solid #c3e6cb;
+}
+
+.status-card-disconnected {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 1px solid #f5c6cb;
+}
+
+.status-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.status-icon-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.status-icon-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.status-icon:hover {
+    transform: scale(1.1);
+}
+
+.config-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e3e6f0;
+    transition: all 0.3s ease;
+}
+
+.config-section:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.quick-stats {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e3e6f0;
+    transition: all 0.3s ease;
+}
+
+.quick-stats:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.stat-item {
+    position: relative;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, #e3e6f0, transparent);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4e73df 0%, #6f42c1 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+}
+
+.card.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.input-group .form-control {
+    border-radius: 8px;
+}
+
+.input-group .input-group-text {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-group .btn {
+    border-radius: 8px !important;
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+/* Navigation tabs responsive */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    border: 1px solid transparent;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 12px;
+    margin-bottom: -2px;
+    background: none;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+    background: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    background: white;
+    border-color: #dee2e6 #dee2e6 #fff;
+    font-weight: 600;
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* QR Code Styles */
+.qr-code-display {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.qr-code-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px;
+}
+
+.qr-code-image {
+    max-width: 250px;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background: white;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.qr-code-image:hover {
+    transform: scale(1.02);
+}
+
+.qr-code-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e3e6f0;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    /* Hide separators between stats on mobile */
+    .stat-item:not(:last-child)::after {
+        display: none;
+    }
+    
+    /* Stack statistics vertically on small screens */
+    .quick-stats .row {
+        flex-direction: column;
+    }
+    
+    .quick-stats .col-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #e3e6f0;
+        padding-bottom: 10px;
+    }
+    
+    .quick-stats .col-3:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    /* Make stat items more mobile-friendly */
+    .stat-item {
+        padding: 15px 10px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .stat-item h5 {
+        font-size: 1.5rem;
+    }
+    
+    /* Configuration section adjustments */
+    .config-section {
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+    
+    /* Status card mobile optimization */
+    .status-card {
+        padding: 15px;
+    }
+    
+    .status-card-connected,
+    .status-card-disconnected {
+        padding: 15px;
+    }
+    
+    .status-card .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .status-actions {
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    .status-actions .btn {
+        width: 100%;
+    }
+    
+    /* Status icon adjustments */
+    .status-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    
+    /* Card header mobile adjustments */
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .card-header #connection-indicator {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    /* Page heading mobile */
+    .d-sm-flex.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .btn-group {
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+        margin: 0 2px;
+    }
+    
+    /* Input groups on mobile */
+    .input-group {
+        flex-wrap: nowrap;
+    }
+    
+    .input-group .form-control {
+        font-size: 14px;
+    }
+    
+    /* Test section mobile */
+    .test-actions .row {
+        margin: 0;
+    }
+    
+    .test-actions .col-6 {
+        padding: 0 2px;
+    }
+    
+    /* Template tabs mobile */
+    .nav-tabs {
+        flex-wrap: wrap;
+        border-bottom: none;
+    }
+    
+    .nav-tabs .nav-item {
+        margin-bottom: 5px;
+        flex: 1 1 auto;
+    }
+    
+    .nav-tabs .nav-link {
+        font-size: 12px;
+        padding: 8px 6px;
+        text-align: center;
+        border-radius: 5px;
+        margin: 0 2px;
+    }
+    
+    /* QR Code mobile adjustments */
+    .qr-code-wrapper {
+        padding: 10px;
+    }
+    
+    .qr-code-image {
+        max-width: 200px;
+    }
+    
+    /* Alert mobile */
+    .alert {
+        font-size: 14px;
+        padding: 10px;
+    }
+    
+    /* Progress bars */
+    .progress {
+        height: 6px;
+        margin-top: 10px;
+    }
+}
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575.98px) {
+    .container-fluid {
+        padding: 10px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .card-body {
+        padding: 15px !important;
+    }
+    
+    .card-header {
+        padding: 10px 15px !important;
+    }
+    
+    /* Make columns full width on very small screens */
+    .col-lg-8,
+    .col-lg-4,
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    /* Stack test buttons vertically */
+    .test-actions .row .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    /* Smaller font sizes */
+    h1.h3 {
+        font-size: 1.5rem;
+    }
+    
+    h5 {
+        font-size: 1.1rem;
+    }
+    
+    h6 {
+        font-size: 1rem;
+    }
+    
+    /* Compact spacing */
+    .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .p-4 {
+        padding: 1rem !important;
+    }
+    
+    /* Tab content mobile */
+    .tab-content textarea {
+        font-size: 13px;
+        min-height: 120px;
+    }
+    
+    /* Action buttons mobile */
+    .text-center .btn {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+</style>
 @endsection

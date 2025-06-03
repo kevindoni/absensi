@@ -8,6 +8,8 @@ use App\Services\AdminNotificationService;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class WhatsAppController extends Controller
 {
@@ -318,13 +320,26 @@ class WhatsAppController extends Controller
     }
 
     /**
-     * Send test message
+     * Send test message with rate limiting
      */
     public function sendTestMessage(Request $request)
     {
+        // Rate limiting: max 5 test messages per minute per IP
+        $key = 'test_message_' . $request->ip();
+        $attempts = cache($key, 0);
+        
+        if ($attempts >= 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Rate limit exceeded. Please wait before sending more test messages.'
+            ], 429);
+        }
+        
+        cache([$key => $attempts + 1], now()->addMinute());
+
         $validator = Validator::make($request->all(), [
-            'phone_number' => 'required|string',
-            'message' => 'required|string|max:1000'
+            'phone_number' => 'required|string|regex:/^[0-9+\-\s\(\)]+$/',
+            'message' => 'required|string|max:1000|min:5'
         ]);
 
         if ($validator->fails()) {
@@ -336,18 +351,34 @@ class WhatsAppController extends Controller
         }
 
         try {
+            // Enhanced phone number validation
             $phoneNumber = $this->whatsappService->formatPhoneNumber($request->phone_number);
             
             if (!$phoneNumber) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Format nomor telepon tidak valid'
+                    'message' => 'Format nomor telepon tidak valid. Gunakan format: 08xxxxxxxxx atau +628xxxxxxxxx'
                 ], 422);
+            }
+
+            // Check if WhatsApp is connected before attempting to send
+            if (!$this->whatsappService->isConnected()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'WhatsApp tidak terhubung. Silakan hubungkan terlebih dahulu.'
+                ], 503);
             }
 
             $result = $this->whatsappService->sendMessage($phoneNumber, $request->message);
             
             if ($result) {
+                // Log successful test message
+                \Log::info('Test message sent successfully', [
+                    'phone' => $phoneNumber,
+                    'message_length' => strlen($request->message),
+                    'user_ip' => $request->ip()
+                ]);
+                
                 return response()->json([
                     'success' => true,
                     'message' => 'Pesan test berhasil dikirim ke ' . $phoneNumber
@@ -356,10 +387,15 @@ class WhatsAppController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengirim pesan test'
+                'message' => 'Gagal mengirim pesan test. Silakan periksa koneksi WhatsApp.'
             ], 400);
 
         } catch (\Exception $e) {
+            \Log::error('Test message failed', [
+                'error' => $e->getMessage(),
+                'phone' => $request->phone_number,
+                'user_ip' => $request->ip()
+            ]);
             
             return response()->json([
                 'success' => false,
@@ -398,194 +434,138 @@ class WhatsAppController extends Controller
     }
 
     /**
-     * Send test attendance notification
-     */
-    public function sendTestAttendanceNotification(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'siswa_id' => 'required|exists:siswas,id',
-                'template_type' => 'required|in:check_in,check_out,late,absent,sick,permission',
-                'time' => 'nullable|string',
-                'date' => 'nullable|string',
-                'location' => 'nullable|string',
-                'late_duration' => 'nullable|string'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            // Prepare variables for template
-            $variables = [
-                'time' => $request->time ?: now()->format('H:i'),
-                'date' => $request->date ?: now()->format('d/m/Y'),
-                'location' => $request->location ?: 'Sekolah',
-                'late_duration' => $request->late_duration ?: '15 menit'
-            ];
-
-            // Send test notification
-            $result = $this->whatsappService->sendAttendanceNotification(
-                $request->siswa_id,
-                $request->template_type,
-                $variables
-            );
-
-            if ($result) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Test notifikasi kehadiran berhasil dikirim'
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengirim test notifikasi kehadiran'
-            ], 400);
-
-        } catch (\Exception $e) {
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
      * Get system health status
      */
-    public function systemHealth()
+    public function getSystemHealth()
     {
         try {
-            $data = [
-                'whatsapp_connected' => $this->whatsappService->isConnected(),
-                'gateway_status' => $this->whatsappService->checkGatewayStatus(),
-                'database_connected' => $this->checkDatabaseConnection(),
+            $isConnected = $this->whatsappService->isConnected();
+            $healthData = [
+                'db_connected' => $this->checkDatabaseConnection(),
+                'whatsapp_connected' => $isConnected,
                 'admin_count' => count($this->whatsappService->getAdminNumbers()),
-                'parent_count' => count($this->whatsappService->getParentNumbers())
+                'parent_count' => count($this->whatsappService->getParentNumbers()),
+                'success_rate' => Setting::getSetting('whatsapp_success_rate', 0),
+                'uptime' => $isConnected ? $this->getReadableUptime() : '0h 0m'
             ];
 
             return response()->json([
                 'success' => true,
-                'data' => $data,
-                'message' => 'System health check completed'
+                'data' => $healthData
             ]);
 
         } catch (\Exception $e) {
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal melakukan pengecekan kesehatan system: ' . $e->getMessage()
+                'message' => 'Failed to get system health status: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Reset templates to default values
+     * Get WhatsApp service stats
      */
-    public function resetTemplatesToDefault()
+    public function getStats()
     {
         try {
-            // Default attendance templates
-            $defaultTemplates = [
-                'whatsapp_template_check_in' => '🟢 Notifikasi Kehadiran dari {school_name}
-
-👤 *Nama*: {nama_siswa}
-🏫 *Kelas*: {kelas}
-📅 *Tanggal*: {tanggal}
-🕐 *Waktu*: {waktu}
-✅ *Status*: {status}
-📝 *Keterangan*: {keterangan}
-
-Terima kasih atas perhatiannya.',
-
-                'whatsapp_template_late' => '⚠️ Notifikasi Keterlambatan dari {school_name}
-
-👤 *Nama*: {nama_siswa}
-🏫 *Kelas*: {kelas}
-📅 *Tanggal*: {tanggal}
-🕐 *Waktu*: {waktu}
-⏰ *Status*: {status}
-📝 *Keterangan*: {keterangan}
-
-Mohon perhatian untuk kedisiplinan anak.',
-
-                'whatsapp_template_absent' => '❌ Notifikasi Ketidakhadiran dari {school_name}
-
-👤 *Nama*: {nama_siswa}
-🏫 *Kelas*: {kelas}
-📅 *Tanggal*: {tanggal}
-❌ *Status*: {status}
-📝 *Keterangan*: {keterangan}
-
-Mohon konfirmasi mengenai ketidakhadiran anak.',
-
-                'whatsapp_template_sick' => '🏥 Notifikasi Sakit dari {school_name}
-
-👤 *Nama*: {nama_siswa}
-🏫 *Kelas*: {kelas}
-📅 *Tanggal*: {tanggal}
-🏥 *Status*: {status}
-📝 *Keterangan*: {keterangan}
-
-Semoga lekas sembuh.',
-
-                'whatsapp_template_permission' => '📄 Notifikasi Izin dari {school_name}
-
-👤 *Nama*: {nama_siswa}
-🏫 *Kelas*: {kelas}
-📅 *Tanggal*: {tanggal}
-📄 *Status*: {status}
-📝 *Keterangan*: {keterangan}
-
-Terima kasih atas pemberitahuannya.',
-
-                'whatsapp_template_check_out' => '🔴 Notifikasi Pulang dari {school_name}
-
-👤 *Nama*: {nama_siswa}
-🏫 *Kelas*: {kelas}
-📅 *Tanggal*: {tanggal}
-🕐 *Waktu*: {waktu}
-🔴 *Status*: {status}
-📝 *Keterangan*: {keterangan}
-
-Anak telah pulang dengan selamat.'
+            $isConnected = $this->whatsappService->isConnected();
+            
+            $healthData = [
+                'total_sent' => Setting::getSetting('whatsapp_total_sent', 0),
+                'success_rate' => Setting::getSetting('whatsapp_success_rate', 0),
+                'uptime' => $isConnected ? $this->getReadableUptime() : '0h 0m'
             ];
-
-            // Reset all templates to default
-            foreach ($defaultTemplates as $key => $value) {
-                Setting::setSetting($key, $value);
-            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Template berhasil direset ke pengaturan default'
+                'data' => $healthData
             ]);
 
         } catch (\Exception $e) {
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mereset template: ' . $e->getMessage()
+                'message' => 'Failed to get WhatsApp stats: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Check database connection
+     * Check database connection status
      */
     private function checkDatabaseConnection()
     {
         try {
-            \DB::connection()->getPdo();
+            DB::connection()->getPdo();
             return true;
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Get readable uptime duration
+     */
+    private function getReadableUptime()
+    {
+        try {
+            // First try to get uptime from WhatsApp service health endpoint
+            $serviceUptime = $this->getServiceUptime();
+            if ($serviceUptime !== null) {
+                return $this->formatUptime($serviceUptime);
+            }
+            
+            // Fallback to connection time tracking
+            $startTime = Setting::getSetting('whatsapp_connection_time');
+            if (!$startTime) {
+                return '0h 0m';
+            }
+            
+            $start = \Carbon\Carbon::createFromTimestamp($startTime);
+            $now = \Carbon\Carbon::now();
+            
+            $hours = $now->diffInHours($start);
+            $minutes = $now->diffInMinutes($start) % 60;
+            
+            return "{$hours}h {$minutes}m";
+        } catch (\Exception $e) {
+            return '0h 0m';
+        }
+    }
+    
+    /**
+     * Get uptime from WhatsApp service health endpoint
+     */
+    private function getServiceUptime()
+    {
+        try {
+            $gatewayUrl = $this->whatsappService->getGatewayUrl();
+            $response = Http::timeout(5)->get($gatewayUrl . '/health');
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['uptime'] ?? null; // uptime in seconds
+            }
+            
+            return null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Format uptime seconds into readable format
+     */
+    private function formatUptime($seconds)
+    {
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        
+        if ($hours > 24) {
+            $days = floor($hours / 24);
+            $hours = $hours % 24;
+            return "{$days}d {$hours}h {$minutes}m";
+        }
+        
+        return "{$hours}h {$minutes}m";
     }
 }

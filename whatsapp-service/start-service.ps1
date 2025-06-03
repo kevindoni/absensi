@@ -1,7 +1,10 @@
 # PowerShell script to start WhatsApp Service
 # Auto-startup script for Windows Task Scheduler
 
-$servicePath = "d:\laragon\www\absensi\whatsapp-service"
+# Load configuration
+. "$PSScriptRoot\config.ps1"
+
+$servicePath = $global:WHATSAPP_SERVICE_PATH
 $logFile = "$servicePath\logs\startup.log"
 
 # Function to write logs

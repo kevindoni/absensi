@@ -1,7 +1,10 @@
 # PowerShell script to add WhatsApp Service to Windows Startup
 # Run this script as Administrator
 
-$servicePath = "d:\laragon\www\absensi\whatsapp-service"
+# Load configuration
+. "$PSScriptRoot\config.ps1"
+
+$servicePath = $global:WHATSAPP_SERVICE_PATH
 $startupScript = "$servicePath\auto-startup.bat"
 $shortcutName = "WhatsApp Service Startup.lnk"
 

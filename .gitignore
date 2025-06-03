@@ -35,6 +35,10 @@ DEPLOYMENT_CHECKLIST.md
 .env.local
 .env.personal
 
+# WhatsApp Service sensitive files
+whatsapp-service/sessions/*.json
+whatsapp-service/logs/*.log
+
 # OS specific files
 .DS_Store
 Thumbs.db

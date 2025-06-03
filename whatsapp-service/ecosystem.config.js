@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'whatsapp-service',
       script: 'server.js',
-      cwd: 'd:/laragon/www/absensi/whatsapp-service',
+      cwd: process.env.WHATSAPP_SERVICE_PATH || process.cwd(),
       instances: 1,
       autorestart: true,
       watch: false,

@@ -6,8 +6,11 @@ echo    WhatsApp Service Auto Startup
 echo ========================================
 echo.
 
+REM Load configuration
+call "%~dp0config.bat"
+
 :: Navigate to service directory
-cd /d "d:\laragon\www\absensi\whatsapp-service"
+cd /d "%WHATSAPP_SERVICE_PATH%"
 
 :: Wait for system to be ready
 echo Waiting for system to be ready...

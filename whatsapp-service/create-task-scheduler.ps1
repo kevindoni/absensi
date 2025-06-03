@@ -1,8 +1,11 @@
 # PowerShell script to create Windows Task Scheduler entry
 # Run this script as Administrator
 
+# Load configuration
+. "$PSScriptRoot\config.ps1"
+
 $taskName = "WhatsApp Service Startup"
-$servicePath = "d:\laragon\www\absensi\whatsapp-service"
+$servicePath = $global:WHATSAPP_SERVICE_PATH
 $scriptPath = "$servicePath\start-service.ps1"
 
 try {

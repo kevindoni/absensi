@@ -1,7 +1,10 @@
 # Verification script for WhatsApp Service Auto-startup
 # This script helps verify that auto-startup is working correctly
 
-$servicePath = "d:\laragon\www\absensi\whatsapp-service"
+# Load configuration
+. "$PSScriptRoot\config.ps1"
+
+$servicePath = $global:WHATSAPP_SERVICE_PATH
 
 Write-Host "=== WhatsApp Service Auto-Startup Verification ===" -ForegroundColor Green
 Write-Host ""
