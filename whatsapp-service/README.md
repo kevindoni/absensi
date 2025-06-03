@@ -221,10 +221,8 @@ whatsapp-service/
 │   └── quick-setup.sh               # Auto-detect setup
 │
 ├── 📚 Documentation
-│   ├── README.md                    # This file
-│   ├── AUTO_RUNNING_GUIDE.md        # Complete setup guide
-│   ├── LINUX_AUTO_STARTUP_GUIDE.md  # Linux-specific guide
-│   └── PROJECT_SUMMARY.md           # Project overview
+│   ├── README.md                    # Main documentation (this file)
+│   └── LICENSE                     # MIT License
 │
 └── 📂 Runtime
     ├── logs/                        # Service logs
@@ -350,7 +348,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 **Support**
 
-- 📖 **Documentation**: Check `AUTO_RUNNING_GUIDE.md` for detailed setup
+- 📖 **Documentation**: This README contains complete setup instructions
 - 🐛 **Issues**: Open an issue on GitHub
 - 💬 **Discussions**: Use GitHub Discussions for questions
 
