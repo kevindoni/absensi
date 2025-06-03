@@ -45,37 +45,7 @@
             </div>
         </li>
 
-        <!-- Nav Item - Messages -->
-        <li class="nav-item dropdown no-arrow mx-1">
-            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-envelope fa-fw"></i>
-                <!-- Counter - Messages -->
-                <span class="badge badge-danger badge-counter">{{ Auth::guard('orangtua')->user()->unreadPesan ?? 0 }}</span>
-            </a>
-            <!-- Dropdown - Messages -->
-            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                aria-labelledby="messagesDropdown">
-                <h6 class="dropdown-header">
-                    Pesan Terbaru
-                </h6>
-                @forelse(Auth::guard('orangtua')->user()->pesanTerbaru ?? [] as $pesan)
-                    <a class="dropdown-item d-flex align-items-center" href="{{ route('orangtua.pesan.show', $pesan->id) }}">
-                        <div class="dropdown-list-image mr-3">
-                            <img class="rounded-circle" src="{{ asset('sbadmin2/img/undraw_profile_2.svg') }}" alt="User Avatar">
-                            <div class="status-indicator {{ $pesan->read_at ? '' : 'bg-success' }}"></div>
-                        </div>
-                        <div>
-                            <div class="text-truncate">{{ Str::limit($pesan->judul, 30) }}</div>
-                            <div class="small text-gray-500">{{ $pesan->sender->nama ?? 'System' }} · {{ $pesan->created_at->diffForHumans() }}</div>
-                        </div>
-                    </a>
-                @empty
-                    <a class="dropdown-item text-center small text-gray-500" href="#">Tidak ada pesan baru</a>
-                @endforelse
-                <a class="dropdown-item text-center small text-gray-500" href="{{ route('orangtua.pesan.index') }}">Lihat Semua Pesan</a>
-            </div>
-        </li>
+
 
         <div class="topbar-divider d-none d-sm-block"></div>
 

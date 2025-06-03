@@ -254,15 +254,7 @@ Route::middleware(['auth:orangtua'])->prefix('orangtua')->name('orangtua.')->gro
     Route::get('/notifikasi', [App\Http\Controllers\Orangtua\NotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::get('/notifikasi/{notifikasi}', [App\Http\Controllers\Orangtua\NotifikasiController::class, 'show'])->name('notifikasi.show');
     Route::patch('/notifikasi/{notifikasi}/read', [App\Http\Controllers\Orangtua\NotifikasiController::class, 'markAsRead'])->name('notifikasi.read');
-    
-    // Pesan Routes
-    Route::get('/pesan', [App\Http\Controllers\Orangtua\PesanController::class, 'index'])->name('pesan.index');
-    Route::get('/pesan/create', [App\Http\Controllers\Orangtua\PesanController::class, 'create'])->name('pesan.create');
-    Route::post('/pesan', [App\Http\Controllers\Orangtua\PesanController::class, 'store'])->name('pesan.store');
-    Route::get('/pesan/{pesan}', [App\Http\Controllers\Orangtua\PesanController::class, 'show'])->name('pesan.show');
-    Route::get('/pesan/{pesan}/reply', [App\Http\Controllers\Orangtua\PesanController::class, 'reply'])->name('pesan.reply');
-    Route::post('/pesan/{pesan}/reply', [App\Http\Controllers\Orangtua\PesanController::class, 'storeReply'])->name('pesan.storeReply');
-    Route::patch('/pesan/{pesan}/end', [App\Http\Controllers\Orangtua\PesanController::class, 'end'])->name('pesan.end');
+
 });
 
 // Admin Profile Routes

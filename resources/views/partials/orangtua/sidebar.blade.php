@@ -52,13 +52,7 @@
         </a>
     </li>
 
-    <!-- Nav Item - Pesan -->
-    <li class="nav-item {{ request()->routeIs('orangtua.pesan.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('orangtua.pesan.index') }}">
-            <i class="fas fa-fw fa-envelope"></i>
-            <span>Pesan</span>
-        </a>
-    </li>
+
 
     <!-- Divider -->
     <hr class="sidebar-divider">
