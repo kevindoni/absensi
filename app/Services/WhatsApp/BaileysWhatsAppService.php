@@ -28,13 +28,24 @@ class BaileysWhatsAppService
             
             if ($response->successful()) {
                 $data = $response->json();
+                $isConnected = $data['isConnected'] ?? false;
+                
+                // Track connection time changes
+                if ($isConnected) {
+                    $this->updateConnectionTime();
+                } else {
+                    $this->clearConnectionTime();
+                }
+                
                 return [
                     'success' => true,
-                    'connected' => $data['isConnected'] ?? false,
+                    'connected' => $isConnected,
                     'state' => $data['connectionState'] ?? 'disconnected'
                 ];
             }
             
+            // Service not responding
+            $this->clearConnectionTime();
             return [
                 'success' => false,
                 'connected' => false,
@@ -43,6 +54,8 @@ class BaileysWhatsAppService
             ];
             
         } catch (Exception $e) {
+            // Clear connection time on error
+            $this->clearConnectionTime();
             return [
                 'success' => false,
                 'connected' => false,
@@ -50,7 +63,7 @@ class BaileysWhatsAppService
                 'error' => $e->getMessage()
             ];
         }
-    }
+        }
 
     /**
      * Get QR Code for authentication
@@ -107,6 +120,9 @@ class BaileysWhatsAppService
             if ($response->successful()) {
                 $data = $response->json();
                 
+                // Track message statistics
+                $this->updateMessageStats(true);
+                
                 return [
                     'success' => true,
                     'messageId' => $data['messageId'] ?? null,
@@ -116,12 +132,18 @@ class BaileysWhatsAppService
 
             $error = $response->json()['error'] ?? 'Unknown error';
 
+            // Track message statistics with failure
+            $this->updateMessageStats(false);
+
             return [
                 'success' => false,
                 'error' => $error
             ];
 
         } catch (Exception $e) {
+            // Track message statistics with failure
+            $this->updateMessageStats(false);
+
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -618,6 +640,67 @@ class BaileysWhatsAppService
             
         } catch (Exception $e) {
             return false;
+        }
+    }
+
+    /**
+     * Track message statistics
+     */
+    private function updateMessageStats($success = true)
+    {
+        try {
+            $totalSent = (int)Setting::getSetting('whatsapp_total_sent', 0);
+            Setting::setSetting('whatsapp_total_sent', $totalSent + 1);
+            
+            $successCount = (int)Setting::getSetting('whatsapp_success_count', 0);
+            if ($success) {
+                Setting::setSetting('whatsapp_success_count', $successCount + 1);
+            }
+            
+            if ($totalSent > 0) {
+                $successRate = round(($successCount / $totalSent) * 100, 1);
+                Setting::setSetting('whatsapp_success_rate', $successRate);
+            }
+        } catch (\Exception $e) {
+            // Log error but don't throw
+            \Log::error('Failed to update message stats: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Track connection time
+     */
+    private function updateConnectionTime()
+    {
+        try {
+            $currentTime = Setting::getSetting('whatsapp_connection_time');
+            
+            // Only set if not already set (preserve original connection time)
+            if (!$currentTime) {
+                Setting::updateOrCreate(
+                    ['key' => 'whatsapp_connection_time'],
+                    ['value' => time()]
+                );
+            }
+        } catch (\Exception $e) {
+            // Log error but don't throw
+            \Log::error('Failed to update connection time: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Clear connection time
+     */
+    private function clearConnectionTime()
+    {
+        try {
+            Setting::updateOrCreate(
+                ['key' => 'whatsapp_connection_time'],
+                ['value' => null]
+            );
+        } catch (\Exception $e) {
+            // Log error but don't throw
+            \Log::error('Failed to clear connection time: ' . $e->getMessage());
         }
     }
 }

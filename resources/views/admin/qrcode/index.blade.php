@@ -26,6 +26,14 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Manajemen QR Code</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.qrcode.analytics') }}" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Analytics QR Code
+            </a>
+            <a href="{{ route('admin.qrcode.settings') }}" class="btn btn-outline-primary">
+                <i class="fas fa-cogs"></i> Pengaturan
+            </a>
+        </div>
     </div>
     
     @if(session('success'))

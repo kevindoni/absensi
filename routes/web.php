@@ -124,6 +124,12 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/qrcode/settings', [App\Http\Controllers\QrController::class, 'showQrSettings'])->name('qrcode.settings');
     Route::post('/qrcode/settings', [App\Http\Controllers\QrController::class, 'updateQrSettings'])->name('qrcode.settings.update');
     Route::put('/qrcode/settings', [App\Http\Controllers\QrController::class, 'updateQrSettings']);
+    
+    // QR Analytics routes
+    Route::get('/qrcode/analytics', [App\Http\Controllers\QrController::class, 'analytics'])->name('qrcode.analytics');
+    Route::post('/qrcode/generate-all-missing', [App\Http\Controllers\QrController::class, 'generateAllMissingQR'])->name('qrcode.generate-all-missing');
+    Route::post('/qrcode/refresh-expired', [App\Http\Controllers\QrController::class, 'refreshExpiredQR'])->name('qrcode.refresh-expired');
+    Route::get('/qrcode/download-report', [App\Http\Controllers\QrController::class, 'downloadReport'])->name('qrcode.download-report');
 
     // Pelajaran routes
     Route::resource('pelajaran', App\Http\Controllers\Admin\PelajaranController::class);
@@ -161,10 +167,10 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/whatsapp/templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateTemplates'])->name('whatsapp.templates');
     Route::post('/whatsapp/attendance-templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateAttendanceTemplates'])->name('whatsapp.attendance-templates');
     Route::post('/whatsapp/reset-templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'resetTemplatesToDefault'])->name('whatsapp.reset-templates');
-    Route::get('/whatsapp/system-health', [App\Http\Controllers\Admin\WhatsAppController::class, 'systemHealth'])->name('whatsapp.system-health');
-    Route::post('/whatsapp/test-attendance-notification', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestAttendanceNotification'])->name('whatsapp.test-attendance-notification');
-    Route::post('/whatsapp/test-message', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestMessage'])->name('whatsapp.test-message');
+    Route::get('/whatsapp/stats', [App\Http\Controllers\Admin\WhatsAppController::class, 'getStats'])->name('whatsapp.stats');
+    Route::get('/whatsapp/system-health', [App\Http\Controllers\Admin\WhatsAppController::class, 'getSystemHealth'])->name('whatsapp.system-health');
     Route::post('/whatsapp/test-notification', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestNotification'])->name('whatsapp.test-notification');
+    Route::post('/whatsapp/test-message', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestMessage'])->name('whatsapp.test-message');
     
     // Admin Notifications Routes
     Route::get('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');

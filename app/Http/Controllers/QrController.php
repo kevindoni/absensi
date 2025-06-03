@@ -942,4 +942,212 @@ class QrController extends Controller
         // Fallback: return the first schedule if no logic matches
         return $allJadwalToday->first();
     }
+
+    /**
+     * Display QR Analytics Dashboard
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function analytics()
+    {
+        // Get statistics
+        $totalStudents = Siswa::count();
+        $totalGenerated = Siswa::whereNotNull('qr_generated_at')->count();
+        $validQrCodes = Siswa::whereNotNull('qr_token')->count();
+        
+        // Calculate expired QR codes based on settings
+        $qrSettings = $this->getQrSettings();
+        $expiredCount = 0;
+        
+        if ($qrSettings->qr_validity_period_type === 'days' && $qrSettings->qr_validity_period > 0) {
+            $expiryDate = Carbon::now()->subDays($qrSettings->qr_validity_period);
+            $expiredCount = Siswa::whereNotNull('qr_generated_at')
+                ->where('qr_generated_at', '<', $expiryDate)
+                ->count();
+        }
+        
+        // Get class-wise statistics
+        $classStats = Kelas::withCount(['siswa'])
+            ->orderBy('nama_kelas')
+            ->get()
+            ->map(function($kelas) use ($qrSettings) {
+                $generated = Siswa::where('kelas_id', $kelas->id)
+                    ->whereNotNull('qr_generated_at')
+                    ->count();
+                    
+                $hasQr = Siswa::where('kelas_id', $kelas->id)
+                    ->whereNotNull('qr_token')
+                    ->count();
+                
+                // Calculate expired QR for this class
+                $expired = 0;
+                if ($qrSettings->qr_validity_period_type === 'days' && $qrSettings->qr_validity_period > 0) {
+                    $expiryDate = Carbon::now()->subDays($qrSettings->qr_validity_period);
+                    $expired = Siswa::where('kelas_id', $kelas->id)
+                        ->whereNotNull('qr_generated_at')
+                        ->where('qr_generated_at', '<', $expiryDate)
+                        ->count();
+                }
+                    
+                return [
+                    'kelas_id' => $kelas->id,
+                    'kelas_name' => $kelas->nama_kelas,
+                    'total_students' => $kelas->siswa_count,
+                    'qr_generated' => $generated,
+                    'qr_valid' => $hasQr,
+                    'qr_expired' => $expired,
+                    'completion_percentage' => $kelas->siswa_count > 0 ? round(($hasQr / $kelas->siswa_count) * 100, 1) : 0
+                ];
+            });
+        
+        // Get recent QR activities (last 50)
+        $recentActivities = Siswa::whereNotNull('qr_generated_at')
+            ->with('kelas:id,nama_kelas')
+            ->orderBy('qr_generated_at', 'desc')
+            ->limit(50)
+            ->get()
+            ->map(function($siswa) {
+                $kelasName = ($siswa->kelas && $siswa->kelas->nama_kelas) ? $siswa->kelas->nama_kelas : 'Unknown';
+                return [
+                    'title' => 'QR Code Generated',
+                    'description' => "QR code generated untuk {$siswa->nama} ({$kelasName})",
+                    'time' => Carbon::parse($siswa->qr_generated_at)->diffForHumans(),
+                    'icon' => 'qrcode',
+                    'color' => 'success'
+                ];
+            });
+        
+        // System health metrics
+        $healthMetrics = [
+            'qr_coverage' => $totalStudents > 0 ? round(($validQrCodes / $totalStudents) * 100, 1) : 0,
+            'generation_rate' => $totalStudents > 0 ? round(($totalGenerated / $totalStudents) * 100, 1) : 0,
+            'expired_rate' => $validQrCodes > 0 ? round(($expiredCount / $validQrCodes) * 100, 1) : 0
+        ];
+        
+        // System health check
+        $health = [
+            'academic_year' => AcademicYear::where('is_active', true)->exists(),
+            'qr_settings' => !empty($qrSettings->qr_validity_period),
+            'schedules' => JadwalMengajar::count() > 0,
+            'storage' => Storage::disk('public')->exists('qrcodes')
+        ];
+        
+        return view('admin.qrcode.analytics', compact(
+            'totalStudents', 
+            'totalGenerated', 
+            'validQrCodes', 
+            'expiredCount',
+            'classStats',
+            'recentActivities',
+            'healthMetrics',
+            'health',
+            'qrSettings'
+        ));
+    }
+
+    /**
+     * Generate QR codes for all students who don't have one
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function generateAllMissingQR()
+    {
+        try {
+            $studentsWithoutQR = Siswa::whereNull('qr_token')->get();
+            $generated = 0;
+            
+            foreach ($studentsWithoutQR as $siswa) {
+                $this->regenerateStudentQrToken($siswa);
+                $generated++;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "QR code berhasil digenerate untuk {$generated} siswa",
+                'generated_count' => $generated
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Refresh expired QR codes
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refreshExpiredQR()
+    {
+        try {
+            $qrSettings = $this->getQrSettings();
+            $refreshed = 0;
+            
+            if ($qrSettings->qr_validity_period_type === 'days' && $qrSettings->qr_validity_period > 0) {
+                $expiryDate = Carbon::now()->subDays($qrSettings->qr_validity_period);
+                $expiredStudents = Siswa::whereNotNull('qr_generated_at')
+                    ->where('qr_generated_at', '<', $expiryDate)
+                    ->get();
+                
+                foreach ($expiredStudents as $siswa) {
+                    $this->regenerateStudentQrToken($siswa);
+                    $refreshed++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "QR code kadaluarsa berhasil diperbarui untuk {$refreshed} siswa",
+                'refreshed_count' => $refreshed
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download analytics report
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadReport()
+    {
+        $reportData = [
+            'generated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'total_students' => Siswa::count(),
+            'total_generated' => Siswa::whereNotNull('qr_generated_at')->count(),
+            'valid_qr_codes' => Siswa::whereNotNull('qr_token')->count(),
+            'class_breakdown' => Kelas::withCount('siswa')
+                ->get()
+                ->map(function($kelas) {
+                    $generated = Siswa::where('kelas_id', $kelas->id)
+                        ->whereNotNull('qr_generated_at')
+                        ->count();
+                    $hasQr = Siswa::where('kelas_id', $kelas->id)
+                        ->whereNotNull('qr_token')
+                        ->count();
+                    
+                    return [
+                        'kelas' => $kelas->nama_kelas,
+                        'total_siswa' => $kelas->siswa_count,
+                        'qr_generated' => $generated,
+                        'has_valid_qr' => $hasQr,
+                        'percentage' => $kelas->siswa_count > 0 ? round(($hasQr / $kelas->siswa_count) * 100, 1) : 0
+                    ];
+                })
+        ];
+        
+        $filename = 'qr_analytics_report_' . Carbon::now()->format('Y-m-d_H-i-s') . '.json';
+        
+        return response()->json($reportData)
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Content-Type', 'application/json');
+    }
 }
