@@ -1,0 +1,42 @@
+[Unit]
+Description=WhatsApp Service for Laravel Attendance System
+Documentation=https://github.com/your-username/whatsapp-service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/your/whatsapp-service
+ExecStart=/usr/bin/node server.js
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+Restart=always
+RestartSec=10
+TimeoutSec=30
+
+# Output to syslog
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=whatsapp-service
+
+# Environment variables
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=PATH=/usr/bin:/usr/local/bin
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/path/to/your/whatsapp-service/sessions
+ReadWritePaths=/path/to/your/whatsapp-service/logs
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=32768
+
+[Install]
+WantedBy=multi-user.target

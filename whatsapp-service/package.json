@@ -2,10 +2,21 @@
   "name": "whatsapp-baileys-gateway",
   "version": "1.0.0",
   "description": "WhatsApp Gateway menggunakan Baileys untuk Laravel Attendance System",
-  "main": "server.js",
-  "scripts": {
+  "main": "server.js",  "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop whatsapp-service",
+    "pm2:restart": "pm2 restart whatsapp-service",
+    "pm2:delete": "pm2 delete whatsapp-service",
+    "pm2:logs": "pm2 logs whatsapp-service",    "pm2:status": "pm2 status",
+    "service:install": "node install-service.js",
+    "service:uninstall": "node uninstall-service.js",
+    "verify": "powershell -ExecutionPolicy Bypass -File verify-auto-startup.ps1",
+    "verify:linux": "./verify-linux-autostart.sh",
+    "health": "powershell -ExecutionPolicy Bypass -File health-check.ps1",
+    "setup:linux": "./setup-linux-autostart.sh",
+    "install:systemd": "sudo ./install-systemd-service.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -29,6 +40,7 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "node-windows": "^1.0.0-beta.8",
     "nodemon": "^3.0.2"
   }
 }
