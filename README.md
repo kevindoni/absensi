@@ -4,109 +4,7 @@
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://php.net)
 
-**Setup WhatsApp Service**
-   
-   ### A. Instalasi Dependencies
-   ```bash
-   # Masuk ke direktori WhatsApp service
-   cd whatsapp-service
-   
-   # Install dependencies
-   npm install
-   ```
-   
-   ### B. Konfigurasi Path Service (Jika Diperlukan)
-   
-   **Menggunakan Script Otomatis:**
-   ```bash
-   # PowerShell (Recommended)
-   ./configure-path.ps1
-   
-   # Atau menggunakan Batch
-   ./configure-path.bat
-   ```
-   
-   **Konfigurasi Manual:**
-   
-   Edit file `whatsapp-service/config.ps1`:
-   ```powershell
-   # Sesuaikan path dengan lokasi instalasi Anda
-   $global:WHATSAPP_SERVICE_PATH = "d:\laragon\www\absensi\whatsapp-service"
-   ```
-   
-   Edit file `whatsapp-service/config.bat`:
-   ```batch
-   REM Sesuaikan path dengan lokasi instalasi Anda
-   set WHATSAPP_SERVICE_PATH=d:\laragon\www\absensi\whatsapp-service
-   ```
-   
-   ### C. Menjalankan Service
-   
-   **Development Mode:**
-   ```bash
-   # Jalankan secara langsung (untuk testing)
-   npm start
-   ```
-   
-   **Production Mode (Recommended):**
-   ```bash
-   # Menggunakan PM2 (otomatis restart)
-   npm run start:pm2
-   
-   # Atau manual dengan PM2
-   pm2 start ecosystem.config.js
-   ```
-   
-   ### D. Setup Auto-Start (Windows)
-   
-   **Menggunakan Windows Startup:**
-   ```bash
-   # Jalankan sebagai Administrator
-   ./add-to-startup.ps1
-   ```
-   
-   **Menggunakan Task Scheduler:**
-   ```bash
-   # Jalankan sebagai Administrator
-   ./create-task-scheduler.ps1
-   ```
-   
-   ### E. Verifikasi Service
-   ```bash
-   # Cek status PM2
-   pm2 status
-   
-   # Cek health service
-   ./health-check.ps1
-   
-   # Test connection
-   curl http://localhost:3001/health
-   ```
-   
-   ### F. Konfigurasi di Laravel Admin
-   
-   1. Login ke dashboard admin
-   2. Masuk ke menu **WhatsApp → Settings**
-   3. Pastikan **Gateway URL** sesuai dengan `.env`:
-      ```
-      http://localhost:3001
-      ```
-   4. Scan QR Code untuk menghubungkan WhatsApp
-   5. Test kirim pesan untuk verifikasi
-   
-   > **📱 Tips WhatsApp Service:**
-   > - Service berjalan di port 3001 (default)
-   > - QR Code akan muncul di terminal saat pertama kali dijalankan
-   > - Session WhatsApp tersimpan di folder `sessions/`
-   > - Log service tersimpan di folder `logs/`
-   > - Gunakan PM2 untuk auto-restart service
-   
-   ```bash
-   # Kembali ke root directory
-   cd ..
-   ```
 
-10. **Start development server**ql.com)
 
 Aplikasi Sistem Informasi Absensi Sekolah adalah platform berbasis web yang dibangun menggunakan framework Laravel. Aplikasi ini dirancang untuk memudahkan proses pencatatan dan pemantauan kehadiran siswa di sekolah. Dengan menggunakan teknologi QR Code, aplikasi ini menawarkan cara modern dan efisien dalam mengelola absensi siswa.
 
@@ -1177,3 +1075,107 @@ CREATE INDEX idx_jadwal_hari ON jadwal_mengajar(hari);
 - **Storage**: 20GB+ SSD
 - **PHP**: 8.1+ with OPcache enabled
 - **MySQL**: 8.0+ with optimized settings
+
+**Setup WhatsApp Service**
+   
+   ### A. Instalasi Dependencies
+   ```bash
+   # Masuk ke direktori WhatsApp service
+   cd whatsapp-service
+   
+   # Install dependencies
+   npm install
+   ```
+   
+   ### B. Konfigurasi Path Service (Jika Diperlukan)
+   
+   **Menggunakan Script Otomatis:**
+   ```bash
+   # PowerShell (Recommended)
+   ./configure-path.ps1
+   
+   # Atau menggunakan Batch
+   ./configure-path.bat
+   ```
+   
+   **Konfigurasi Manual:**
+   
+   Edit file `whatsapp-service/config.ps1`:
+   ```powershell
+   # Sesuaikan path dengan lokasi instalasi Anda
+   $global:WHATSAPP_SERVICE_PATH = "d:\laragon\www\absensi\whatsapp-service"
+   ```
+   
+   Edit file `whatsapp-service/config.bat`:
+   ```batch
+   REM Sesuaikan path dengan lokasi instalasi Anda
+   set WHATSAPP_SERVICE_PATH=d:\laragon\www\absensi\whatsapp-service
+   ```
+   
+   ### C. Menjalankan Service
+   
+   **Development Mode:**
+   ```bash
+   # Jalankan secara langsung (untuk testing)
+   npm start
+   ```
+   
+   **Production Mode (Recommended):**
+   ```bash
+   # Menggunakan PM2 (otomatis restart)
+   npm run start:pm2
+   
+   # Atau manual dengan PM2
+   pm2 start ecosystem.config.js
+   ```
+   
+   ### D. Setup Auto-Start (Windows)
+   
+   **Menggunakan Windows Startup:**
+   ```bash
+   # Jalankan sebagai Administrator
+   ./add-to-startup.ps1
+   ```
+   
+   **Menggunakan Task Scheduler:**
+   ```bash
+   # Jalankan sebagai Administrator
+   ./create-task-scheduler.ps1
+   ```
+   
+   ### E. Verifikasi Service
+   ```bash
+   # Cek status PM2
+   pm2 status
+   
+   # Cek health service
+   ./health-check.ps1
+   
+   # Test connection
+   curl http://localhost:3001/health
+   ```
+   
+   ### F. Konfigurasi di Laravel Admin
+   
+   1. Login ke dashboard admin
+   2. Masuk ke menu **WhatsApp → Settings**
+   3. Pastikan **Gateway URL** sesuai dengan `.env`:
+      ```
+      http://localhost:3001
+      ```
+   4. Scan QR Code untuk menghubungkan WhatsApp
+   5. Test kirim pesan untuk verifikasi
+   
+   > **📱 Tips WhatsApp Service:**
+   > - Service berjalan di port 3001 (default)
+   > - QR Code akan muncul di terminal saat pertama kali dijalankan
+   > - Session WhatsApp tersimpan di folder `sessions/`
+   > - Log service tersimpan di folder `logs/`
+   > - Gunakan PM2 untuk auto-restart service
+   
+   ```bash
+   # Kembali ke root directory
+   cd ..
+   ```
+
+10. **Start development server**ql.com)
