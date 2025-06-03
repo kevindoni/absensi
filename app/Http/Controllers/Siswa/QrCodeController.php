@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class QrCodeController extends Controller
@@ -14,7 +15,9 @@ class QrCodeController extends Controller
     {
         $siswa = Auth::guard('siswa')->user();
         return view('siswa.qrcode.show', compact('siswa'));
-    }/**
+    }
+
+    /**
      * Download the QR code image file.
      * Uses standardized QR generation to avoid ImageMagick issues.
      */
@@ -35,12 +38,9 @@ class QrCodeController extends Controller
         $cleanName = str_replace(' ', '_', strtolower($siswa->nama_lengkap));
         $downloadName = 'qrcode-' . $cleanName . '.svg';
 
-        // Return SVG as download (more reliable than PNG with ImageMagick issues)
-        return response($qrSvg)
+        // Return SVG content for download
+        return response($qrSvg, 200)
             ->header('Content-Type', 'image/svg+xml')
-            ->header('Content-Disposition', 'attachment; filename="' . $downloadName . '"')
-            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
-            ->header('Pragma', 'no-cache')
-            ->header('Expires', '0');
+            ->header('Content-Disposition', 'attachment; filename="' . $downloadName . '"');
     }
 }

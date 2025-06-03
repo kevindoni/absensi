@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Siswa;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 
 class StandardizeQrTokens extends Command
 {
@@ -94,15 +93,9 @@ class StandardizeQrTokens extends Command
             try {
                 $oldToken = $siswa->qr_token;
                 $this->regenerateStandardToken($siswa);
-                Log::info("QR token standardized", [
-                    'student_id' => $siswa->id,
-                    'old_token' => $oldToken,
-                    'new_token' => $siswa->qr_token
-                ]);
                 $updated++;
             } catch (\Exception $e) {
                 $failed++;
-                Log::error("Failed to standardize QR token for student {$siswa->id}: " . $e->getMessage());
             }
             $progressBar->advance();
         }
@@ -111,14 +104,9 @@ class StandardizeQrTokens extends Command
         foreach ($noToken as $siswa) {
             try {
                 $this->regenerateStandardToken($siswa);
-                Log::info("QR token generated", [
-                    'student_id' => $siswa->id,
-                    'new_token' => $siswa->qr_token
-                ]);
                 $updated++;
             } catch (\Exception $e) {
                 $failed++;
-                Log::error("Failed to generate QR token for student {$siswa->id}: " . $e->getMessage());
             }
             $progressBar->advance();
         }

@@ -25,21 +25,7 @@ Route::get('/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
 })->name('csrf.token');
 
-// Debug session route (only in local environment)
-Route::get('/debug-session', function () {
-    if (config('app.env') !== 'local') {
-        abort(404);
-    }
-    return view('debug.session');
-})->name('debug.session');
 
-// Test login route (only in local environment)
-Route::get('/test-login', function () {
-    if (config('app.env') !== 'local') {
-        abort(404);
-    }
-    return view('test-login');
-})->name('test.login');
 
 // Guest routes (for login)
 Route::middleware('guest:admin,guru,siswa,orangtua')->group(function () {
@@ -174,6 +160,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/whatsapp/admin-numbers', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateAdminNumbers'])->name('whatsapp.admin-numbers');
     Route::post('/whatsapp/templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateTemplates'])->name('whatsapp.templates');
     Route::post('/whatsapp/attendance-templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'updateAttendanceTemplates'])->name('whatsapp.attendance-templates');
+    Route::post('/whatsapp/reset-templates', [App\Http\Controllers\Admin\WhatsAppController::class, 'resetTemplatesToDefault'])->name('whatsapp.reset-templates');
+    Route::get('/whatsapp/system-health', [App\Http\Controllers\Admin\WhatsAppController::class, 'systemHealth'])->name('whatsapp.system-health');
     Route::post('/whatsapp/test-attendance-notification', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestAttendanceNotification'])->name('whatsapp.test-attendance-notification');
     Route::post('/whatsapp/test-message', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestMessage'])->name('whatsapp.test-message');
     Route::post('/whatsapp/test-notification', [App\Http\Controllers\Admin\WhatsAppController::class, 'sendTestNotification'])->name('whatsapp.test-notification');

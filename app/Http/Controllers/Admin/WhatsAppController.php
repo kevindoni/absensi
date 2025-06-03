@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\WhatsApp\BaileysWhatsAppService;
 use App\Services\AdminNotificationService;
+use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class WhatsAppController extends Controller
@@ -65,11 +65,7 @@ class WhatsAppController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $errorMessage
-            ], 400);
-
-        } catch (\Exception $e) {
-            Log::error('Error getting QR code', ['error' => $e->getMessage()]);
-            
+            ], 400);        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -89,11 +85,7 @@ class WhatsAppController extends Controller
                 'success' => true,
                 'status' => $status,
                 'connected' => $this->whatsappService->isConnected()
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error getting WhatsApp status', ['error' => $e->getMessage()]);
-            
+            ]);        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil status koneksi'
@@ -122,7 +114,6 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error disconnecting WhatsApp', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -163,7 +154,6 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error updating gateway URL', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -223,7 +213,6 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error updating admin numbers', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -275,7 +264,6 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error updating message templates', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -315,17 +303,12 @@ class WhatsAppController extends Controller
             Setting::setSetting('whatsapp_template_sick', $request->sick);
             Setting::setSetting('whatsapp_template_permission', $request->permission);
 
-            Log::info('Attendance templates updated', [
-                'user_id' => auth()->user()->id
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Template notifikasi kehadiran berhasil diperbarui'
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error updating attendance templates', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -377,7 +360,6 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error sending test message', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -407,7 +389,6 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error sending test notification', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -455,12 +436,6 @@ class WhatsAppController extends Controller
             );
 
             if ($result) {
-                Log::info('Test attendance notification sent', [
-                    'siswa_id' => $request->siswa_id,
-                    'template_type' => $request->template_type,
-                    'user_id' => auth()->user()->id
-                ]);
-
                 return response()->json([
                     'success' => true,
                     'message' => 'Test notifikasi kehadiran berhasil dikirim'
@@ -473,12 +448,144 @@ class WhatsAppController extends Controller
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Error sending test attendance notification', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Get system health status
+     */
+    public function systemHealth()
+    {
+        try {
+            $data = [
+                'whatsapp_connected' => $this->whatsappService->isConnected(),
+                'gateway_status' => $this->whatsappService->checkGatewayStatus(),
+                'database_connected' => $this->checkDatabaseConnection(),
+                'admin_count' => count($this->whatsappService->getAdminNumbers()),
+                'parent_count' => count($this->whatsappService->getParentNumbers())
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'message' => 'System health check completed'
+            ]);
+
+        } catch (\Exception $e) {
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal melakukan pengecekan kesehatan system: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reset templates to default values
+     */
+    public function resetTemplatesToDefault()
+    {
+        try {
+            // Default attendance templates
+            $defaultTemplates = [
+                'whatsapp_template_check_in' => '🟢 Notifikasi Kehadiran dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+✅ *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Terima kasih atas perhatiannya.',
+
+                'whatsapp_template_late' => '⚠️ Notifikasi Keterlambatan dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+⏰ *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Mohon perhatian untuk kedisiplinan anak.',
+
+                'whatsapp_template_absent' => '❌ Notifikasi Ketidakhadiran dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+❌ *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Mohon konfirmasi mengenai ketidakhadiran anak.',
+
+                'whatsapp_template_sick' => '🏥 Notifikasi Sakit dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🏥 *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Semoga lekas sembuh.',
+
+                'whatsapp_template_permission' => '📄 Notifikasi Izin dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+📄 *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Terima kasih atas pemberitahuannya.',
+
+                'whatsapp_template_check_out' => '🔴 Notifikasi Pulang dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+🔴 *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Anak telah pulang dengan selamat.'
+            ];
+
+            // Reset all templates to default
+            foreach ($defaultTemplates as $key => $value) {
+                Setting::setSetting($key, $value);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Template berhasil direset ke pengaturan default'
+            ]);
+
+        } catch (\Exception $e) {
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mereset template: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check database connection
+     */
+    private function checkDatabaseConnection()
+    {
+        try {
+            \DB::connection()->getPdo();
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 }

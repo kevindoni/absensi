@@ -247,28 +247,12 @@ class SiswaController extends Controller
             $activeYear = AcademicYear::where('is_active', true)->first();
             if (!$activeYear) {
                 return redirect()->back()->with('error', 'Tidak ada tahun akademik yang aktif.');
-            }
-
-            \Log::info('Starting student import process', [
-                'filename' => $request->file('file')->getClientOriginalName(),
-                'size' => $request->file('file')->getSize(),
-                'type' => $request->file('file')->getMimeType(),
-                'academic_year' => $activeYear->year
-            ]);
-
-            $startTime = microtime(true);
+            }            $startTime = microtime(true);
             
             $import = new SiswaImport($activeYear);
             Excel::import($import, $request->file('file'));
             
-            $endTime = microtime(true);
-            $executionTime = round($endTime - $startTime, 2);
-
-            \Log::info('Student import completed successfully', [
-                'execution_time' => $executionTime,
-                'records_processed' => $import->getSuccessCount(),
-                'errors' => $import->getErrorCount()
-            ]);
+            $endTime = microtime(true);            $executionTime = round($endTime - $startTime, 2);
 
             $successMessage = sprintf(
                 'Import berhasil! %d siswa telah ditambahkan dalam %.2f detik. Tahun Ajaran: %s', 
@@ -277,14 +261,7 @@ class SiswaController extends Controller
                 $activeYear->year
             );
 
-            return redirect()->route('admin.siswa.index')->with('success', $successMessage);
-
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            \Log::error('Validation error during import', [
-                'failures' => $e->failures(),
-                'error_count' => count($e->failures())
-            ]);
-            
+            return redirect()->route('admin.siswa.index')->with('success', $successMessage);        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $errors = collect($e->failures())
                 ->map(function($failure) {
                     return "Baris {$failure->row()}: {$failure->errors()[0]}";
@@ -293,14 +270,7 @@ class SiswaController extends Controller
             
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan validasi pada data import:')
-                ->with('validation_errors', $errors);
-
-        } catch (\Exception $e) {
-            \Log::error('Error during student import', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+                ->with('validation_errors', $errors);        } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
         }

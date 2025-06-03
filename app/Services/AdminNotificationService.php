@@ -6,7 +6,6 @@ use App\Models\Admin;
 use App\Notifications\SystemNotification;
 use App\Services\WhatsApp\BaileysWhatsAppService;
 use App\Jobs\SendWhatsAppMessage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 
 class AdminNotificationService
@@ -33,7 +32,6 @@ class AdminNotificationService
             $admins = Admin::all();
             
             if ($admins->isEmpty()) {
-                Log::warning('No admin users found to send notification to');
                 return false;
             }
             
@@ -59,19 +57,8 @@ class AdminNotificationService
                 $this->sendWhatsAppNotification($message, $title);
             }
             
-            Log::info('Admin notification sent successfully', [
-                'message' => $message,
-                'admin_count' => $admins->count(),
-                'whatsapp_sent' => $sendWhatsApp
-            ]);
-            
             return true;
         } catch (\Exception $e) {
-            Log::error('Error sending admin notification', [
-                'message' => $message,
-                'error' => $e->getMessage()
-            ]);
-            
             return false;
         }
     }    /**
@@ -85,14 +72,12 @@ class AdminNotificationService
     {
         try {
             if (!$this->whatsappService->isConnected()) {
-                Log::warning('WhatsApp service is not connected, skipping WhatsApp notification');
                 return;
             }
 
             $allNumbers = $this->whatsappService->getAllNotificationNumbers();
             
             if (empty($allNumbers)) {
-                Log::info('No WhatsApp numbers configured for notifications');
                 return;
             }
 
@@ -102,16 +87,8 @@ class AdminNotificationService
                 dispatch(new SendWhatsAppMessage($number, $fullMessage));
             }
 
-            Log::info('WhatsApp notifications queued for all recipients', [
-                'total_count' => count($allNumbers),
-                'admin_count' => count($this->whatsappService->getAdminNumbers()),
-                'parent_count' => count($this->whatsappService->getParentNumbers())
-            ]);
-
         } catch (\Exception $e) {
-            Log::error('Error sending WhatsApp notification to admins', [
-                'error' => $e->getMessage()
-            ]);
+            // Error handling
         }
     }
 

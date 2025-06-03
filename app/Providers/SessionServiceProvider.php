@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
-use Illuminate\Support\Facades\Log;
 
 class SessionServiceProvider extends ServiceProvider
 {
@@ -32,28 +31,12 @@ class SessionServiceProvider extends ServiceProvider
             session(['auth_guard' => $guard]);
             session(['user_login_time' => now()->timestamp]);
             session(['user_id' => $user->id]);
-            
-            // Log successful login
-            Log::info("User logged in", [
-                'guard' => $guard,
-                'user_id' => $user->id,
-                'session_id' => session()->getId(),
-                'ip' => request()->ip()
-            ]);
         });
 
         // Listen for logout events
         Event::listen(Logout::class, function (Logout $event) {
             $guard = $event->guard;
             $user = $event->user;
-            
-            // Log logout
-            Log::info("User logged out", [
-                'guard' => $guard,
-                'user_id' => $user ? $user->id : null,
-                'session_id' => session()->getId(),
-                'ip' => request()->ip()
-            ]);
         });
     }
 }

@@ -25,9 +25,6 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, WithCustom
     public function __construct($academicYear = null)
     {
         $this->academicYear = $academicYear ?? AcademicYear::where('is_active', true)->first();
-        \Log::info('Initializing student import process', [
-            'academic_year' => $this->academicYear ? $this->academicYear->year : 'No active year'
-        ]);
 
         // Cache all classes for the academic year
         if ($this->academicYear) {
@@ -52,13 +49,6 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, WithCustom
         $this->currentRow++;
         
         try {
-            \Log::debug("Processing row #{$this->currentRow}", [
-                'nisn' => $row['nisn'] ?? 'N/A',
-                'nama' => $row['nama_siswa'] ?? 'N/A',
-                'kelas' => $row['kelas'] ?? 'N/A',
-                'jenis_kelamin' => $row['jenis_kelamin'] ?? 'N/A'
-            ]);
-            
             // Get active academic year
             $academicYear = $this->academicYear ?? AcademicYear::where('is_active', true)->first();
             if (!$academicYear) {
@@ -99,22 +89,8 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, WithCustom
             ]);
 
             $this->successCount++;
-            
-            \Log::debug("Successfully processed student", [
-                'row' => $this->currentRow,
-                'nisn' => $row['nisn'],
-                'nama' => $row['nama_siswa'],
-                'kelas' => $kelasName,
-                'academic_year' => $academicYear->year,
-                'jenis_kelamin' => strtoupper($row['jenis_kelamin'])
-            ]);
 
             if ($this->successCount % $this->batchSize === 0) {
-                \Log::info("Batch #{$this->currentBatch} completed", [
-                    'success_count' => $this->successCount,
-                    'error_count' => $this->errorCount,
-                    'last_nisn' => $row['nisn']
-                ]);
                 $this->currentBatch++;
             }
 
@@ -122,11 +98,6 @@ class SiswaImport implements ToModel, WithHeadingRow, WithValidation, WithCustom
 
         } catch (\Exception $e) {
             $this->errorCount++;
-            \Log::error("Error processing row #{$this->currentRow}", [
-                'row_data' => $row,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             throw $e;
         }
     }

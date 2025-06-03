@@ -8,7 +8,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Services\WhatsApp\BaileysWhatsAppService;
-use Illuminate\Support\Facades\Log;
 
 class SendWhatsAppMessage implements ShouldQueue
 {
@@ -42,18 +41,12 @@ class SendWhatsAppMessage implements ShouldQueue
         try {
             // Check if WhatsApp service is enabled
             if (!$whatsappService->isEnabled()) {
-                Log::info('WhatsApp service is disabled, skipping message send');
                 return;
             }
 
             // Check connection status
             $status = $whatsappService->getConnectionStatus();
             if (!$status['connected']) {
-                Log::warning('WhatsApp not connected, requeueing message', [
-                    'phone' => $this->phone,
-                    'status' => $status
-                ]);
-                
                 // Release job back to queue with delay
                 $this->release(60); // Retry after 1 minute
                 return;
@@ -74,18 +67,8 @@ class SendWhatsAppMessage implements ShouldQueue
             }
 
             if ($result['success']) {
-                Log::info('WhatsApp message sent successfully via job', [
-                    'phone' => $this->phone,
-                    'messageId' => $result['messageId'] ?? null,
-                    'type' => $this->mediaType
-                ]);
+                // Success - job completed
             } else {
-                Log::error('WhatsApp message sending failed in job', [
-                    'phone' => $this->phone,
-                    'error' => $result['error'] ?? 'Unknown error',
-                    'type' => $this->mediaType
-                ]);
-                
                 // Fail the job if it's not a connection issue
                 if (!str_contains(strtolower($result['error'] ?? ''), 'not connected')) {
                     $this->fail(new \Exception($result['error'] ?? 'Failed to send WhatsApp message'));
@@ -96,12 +79,6 @@ class SendWhatsAppMessage implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::error('WhatsApp job execution failed', [
-                'phone' => $this->phone,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
             $this->fail($e);
         }
     }
@@ -111,11 +88,6 @@ class SendWhatsAppMessage implements ShouldQueue
      */
     public function failed(\Throwable $exception)
     {
-        Log::error('WhatsApp message job failed permanently', [
-            'phone' => $this->phone,
-            'message' => $this->message,
-            'error' => $exception->getMessage(),
-            'attempts' => $this->attempts()
-        ]);
+        // Job failed - handle cleanup if needed
     }
 }

@@ -54,7 +54,6 @@ class KelasImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpty
                 ->first();
 
             if ($existingKelas) {
-                Log::info("Kelas {$row['nama_kelas']} already exists for this academic year. Skipping.");
                 return null;
             }            
             return new Kelas([
@@ -66,10 +65,6 @@ class KelasImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpty
                 'is_active' => true
             ]);
         } catch (\Exception $e) {
-            Log::error("Error importing kelas: " . $e->getMessage(), [
-                'row' => $row,
-                'trace' => $e->getTraceAsString()
-            ]);
             throw $e;
         }
     }
@@ -93,11 +88,7 @@ class KelasImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpty
         $this->failures = $failures;
         
         foreach ($failures as $failure) {
-            Log::warning('Row import failed:', [
-                'row' => $failure->row(),
-                'attribute' => $failure->attribute(),
-                'errors' => $failure->errors()
-            ]);
+            // Log failure details
         }
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Services\WhatsApp;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
 use App\Models\OrangTua;
 use App\Models\Siswa;
@@ -44,7 +43,6 @@ class BaileysWhatsAppService
             ];
             
         } catch (Exception $e) {
-            Log::error('WhatsApp connection status check failed: ' . $e->getMessage());
             return [
                 'success' => false,
                 'connected' => false,
@@ -78,7 +76,6 @@ class BaileysWhatsAppService
             ];
             
         } catch (Exception $e) {
-            Log::error('WhatsApp QR code retrieval failed: ' . $e->getMessage());
             return [
                 'success' => false,
                 'qrCode' => null,
@@ -110,11 +107,6 @@ class BaileysWhatsAppService
             if ($response->successful()) {
                 $data = $response->json();
                 
-                Log::info('WhatsApp message sent successfully', [
-                    'phone' => $formattedPhone,
-                    'message_id' => $data['messageId'] ?? null
-                ]);
-                
                 return [
                     'success' => true,
                     'messageId' => $data['messageId'] ?? null,
@@ -123,11 +115,6 @@ class BaileysWhatsAppService
             }
 
             $error = $response->json()['error'] ?? 'Unknown error';
-            Log::error('WhatsApp message sending failed', [
-                'phone' => $formattedPhone,
-                'error' => $error,
-                'status' => $response->status()
-            ]);
 
             return [
                 'success' => false,
@@ -135,7 +122,6 @@ class BaileysWhatsAppService
             ];
 
         } catch (Exception $e) {
-            Log::error('WhatsApp message sending exception: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -167,12 +153,6 @@ class BaileysWhatsAppService
             if ($response->successful()) {
                 $data = $response->json();
                 
-                Log::info('WhatsApp media sent successfully', [
-                    'phone' => $formattedPhone,
-                    'mediaType' => $mediaType,
-                    'message_id' => $data['messageId'] ?? null
-                ]);
-                
                 return [
                     'success' => true,
                     'messageId' => $data['messageId'] ?? null,
@@ -187,7 +167,6 @@ class BaileysWhatsAppService
             ];
 
         } catch (Exception $e) {
-            Log::error('WhatsApp media sending exception: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -221,7 +200,6 @@ class BaileysWhatsAppService
             ];
             
         } catch (Exception $e) {
-            Log::error('WhatsApp disconnect failed: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -505,25 +483,16 @@ class BaileysWhatsAppService
             $siswa = Siswa::with('orangtua', 'kelas')->find($siswaId);
             
             if (!$siswa) {
-                Log::error('Student not found for attendance notification', ['siswa_id' => $siswaId]);
                 return false;
             }
 
             // Get parent phone number
             if (!$siswa->orangtua || !$siswa->orangtua->no_telp) {
-                Log::warning('No parent phone number found for student', [
-                    'siswa_id' => $siswaId,
-                    'siswa_name' => $siswa->nama_lengkap
-                ]);
                 return false;
             }
 
             $parentPhone = $this->formatPhoneNumber($siswa->orangtua->no_telp);
             if (!$parentPhone) {
-                Log::error('Invalid parent phone number format', [
-                    'siswa_id' => $siswaId,
-                    'phone' => $siswa->orangtua->no_telp
-                ]);
                 return false;
             }
 
@@ -532,7 +501,6 @@ class BaileysWhatsAppService
             $template = $templates[$templateType] ?? null;
 
             if (!$template) {
-                Log::error('Attendance template not found', ['template_type' => $templateType]);
                 return false;
             }
 
@@ -554,29 +522,12 @@ class BaileysWhatsAppService
             $result = $this->sendMessage($parentPhone, $message);
 
             if ($result['success']) {
-                Log::info('Attendance notification sent to parent', [
-                    'siswa_id' => $siswaId,
-                    'siswa_name' => $siswa->nama_lengkap,
-                    'parent_phone' => $parentPhone,
-                    'template_type' => $templateType,
-                    'message_id' => $result['messageId'] ?? null
-                ]);
                 return true;
             } else {
-                Log::error('Failed to send attendance notification to parent', [
-                    'siswa_id' => $siswaId,
-                    'parent_phone' => $parentPhone,
-                    'error' => $result['error'] ?? 'Unknown error'
-                ]);
                 return false;
             }
 
         } catch (\Exception $e) {
-            Log::error('Exception in attendance notification', [
-                'siswa_id' => $siswaId,
-                'template_type' => $templateType,
-                'error' => $e->getMessage()
-            ]);
             return false;
         }
     }
@@ -625,7 +576,6 @@ class BaileysWhatsAppService
             }
         }
 
-        Log::info('Bulk attendance notifications completed', $results);
         return $results;
     }
 
@@ -652,5 +602,22 @@ class BaileysWhatsAppService
             'status' => 'Status kehadiran',
             'keterangan' => 'Keterangan tambahan'
         ];
+    }    /**
+     * Check gateway status and availability
+     */
+    public function checkGatewayStatus()
+    {
+        try {
+            $response = Http::timeout(10)->get($this->apiUrl . '/health');
+            
+            if ($response->successful()) {
+                return true;
+            }
+            
+            return false;
+            
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }

@@ -264,13 +264,6 @@ class AbsensiController extends Controller
             return redirect()->route('guru.login')->with('error', 'Anda harus login terlebih dahulu');
         }
         
-        // Debug logging
-        \Log::info('takeAttendance called', [
-            'jadwal_id' => $jadwalId,
-            'guru_id' => $guru->id,
-            'guru_name' => $guru->nama_lengkap
-        ]);
-        
         $jadwal = JadwalMengajar::with('kelas')->find($jadwalId);
         if (!$jadwal || !$jadwal->kelas) {
             return redirect()->route('guru.absensi.index')
@@ -286,11 +279,6 @@ class AbsensiController extends Controller
         
         // Check if this guru is assigned to this schedule
         if ($jadwal->guru_id !== $guru->id) {
-            \Log::warning('Unauthorized jadwal access', [
-                'jadwal_id' => $jadwalId,
-                'jadwal_guru_id' => $jadwal->guru_id,
-                'current_guru_id' => $guru->id
-            ]);
             return redirect()->route('guru.absensi.index')
                    ->with('error', 'Anda tidak memiliki akses ke jadwal ini');
         }
@@ -306,15 +294,7 @@ class AbsensiController extends Controller
             'hadir' => $absensiDetail->whereIn('status', ['hadir', 'terlambat'])->count()
         ];
 
-        // Debug logging for data
-        \Log::info('takeAttendance data', [
-            'jadwal_id' => $jadwalId,
-            'tanggal' => $tanggal,
-            'total_siswa' => $stats['total'],
-            'total_hadir' => $stats['hadir'],
-            'absensi_records' => $absensiDetail->count(),
-            'absensi_statuses' => $absensiDetail->pluck('status')->toArray()
-        ]);        return view('guru.absensi.takeAttendance', compact(
+        return view('guru.absensi.takeAttendance', compact(
             'jadwal', 'siswa', 'absensiDetail', 'stats'
         ));
     }
@@ -577,11 +557,6 @@ class AbsensiController extends Controller
                     $this->attendanceNotificationService->sendAttendanceNotification($absensi);
                 } catch (\Exception $e) {
                     // Log error but don't fail the attendance recording
-                    \Log::error('Failed to send attendance notification via WhatsApp', [
-                        'absensi_id' => $absensi->id,
-                        'siswa_id' => $siswa->id,
-                        'error' => $e->getMessage()
-                    ]);
                 }
                 
                 return response()->json([
@@ -634,15 +609,6 @@ class AbsensiController extends Controller
             $jadwalId = $request->jadwal_id;
             $nisn = $request->nisn;
             
-            // Log the incoming request
-            \Log::info('Manual attendance request received', [
-                'nisn' => $nisn,
-                'jadwal_id' => $jadwalId,
-                'tanggal' => $tanggal,
-                'guru_id' => $guru->id,
-                'timestamp' => now()
-            ]);
-            
             // Create a unique lock key for this manual attendance request
             $lockKey = "manual_attendance_" . md5($nisn . $jadwalId . $tanggal);
             $lockFile = storage_path("app/locks/{$lockKey}.lock");
@@ -651,23 +617,12 @@ class AbsensiController extends Controller
             if (file_exists($lockFile)) {
                 $lockTime = filemtime($lockFile);
                 if (time() - $lockTime < 10) { // 10 seconds lock timeout
-                    \Log::warning('Duplicate manual attendance request blocked', [
-                        'nisn' => $nisn,
-                        'jadwal_id' => $jadwalId,
-                        'lock_file' => $lockFile,
-                        'lock_age_seconds' => time() - $lockTime
-                    ]);
-                    
                     return response()->json([
                         'success' => false, 
                         'message' => 'Absensi sedang diproses. Silakan tunggu sebentar.'
                     ], 429); // 429 Too Many Requests
                 } else {
                     // Lock file is stale, remove it
-                    \Log::info('Removing stale lock file', [
-                        'lock_file' => $lockFile,
-                        'lock_age_seconds' => time() - $lockTime
-                    ]);
                     @unlink($lockFile);
                 }
             }
@@ -677,7 +632,6 @@ class AbsensiController extends Controller
                 mkdir(storage_path('app/locks'), 0755, true);
             }
             file_put_contents($lockFile, time());
-            \Log::info('Lock file created', ['lock_file' => $lockFile]);
             
             $siswa = Siswa::where('nisn', $nisn)->first();
             if (!$siswa) {
@@ -764,11 +718,6 @@ class AbsensiController extends Controller
                     $this->attendanceNotificationService->sendAttendanceNotification($absensi);
                 } catch (\Exception $e) {
                     // Log error but don't fail the attendance recording
-                    \Log::error('Failed to send attendance notification via WhatsApp', [
-                        'absensi_id' => $absensi->id,
-                        'siswa_id' => $siswa->id,
-                        'error' => $e->getMessage()
-                    ]);
                 }
                 
                 return response()->json([
@@ -790,13 +739,6 @@ class AbsensiController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::error('Error in manual attendance', [
-                'nisn' => $nisn ?? 'unknown',
-                'jadwal_id' => $jadwalId ?? 'unknown',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -804,7 +746,6 @@ class AbsensiController extends Controller
         } finally {
             // Clean up lock file
             if (isset($lockFile) && file_exists($lockFile)) {
-                \Log::info('Cleaning up lock file', ['lock_file' => $lockFile]);
                 @unlink($lockFile);
             }
         }
@@ -871,11 +812,6 @@ class AbsensiController extends Controller
                         $this->attendanceNotificationService->sendAttendanceNotification($absensi);
                     } catch (\Exception $e) {
                         // Log error but don't fail the completion process
-                        \Log::error('Failed to send absence notification via WhatsApp', [
-                            'absensi_id' => $absensi->id,
-                            'siswa_id' => $siswa->id,
-                            'error' => $e->getMessage()
-                        ]);
                     }
                 });
             }

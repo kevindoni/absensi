@@ -87,7 +87,6 @@ class NotificationsController extends Controller
             $adminNotificationService = app(\App\Services\AdminNotificationService::class);
             $adminNotificationService->sendTestNotification();
         } catch (\Exception $e) {
-            \Log::warning('Failed to send test notification: ' . $e->getMessage());
         }
         
         // Get notification settings

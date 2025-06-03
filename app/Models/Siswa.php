@@ -41,14 +41,21 @@ class Siswa extends Authenticatable
     {
         return $this->belongsTo(OrangTua::class, 'orangtua_id');
     }
-    
-    /**
+      /**
      * Get the attendance details for this student.
      */
     public function absensiDetails()
     {
         return $this->hasMany(AbsensiDetail::class, 'siswa_id');
-    }    /**
+    }
+    
+    /**
+     * Accessor to get nama from nama_lengkap for backward compatibility.
+     */
+    public function getNamaAttribute()
+    {
+        return $this->nama_lengkap;
+    }/**
      * Generate QR Code image file as SVG and return full file path.
      * Uses standardized QR generation method from QrController.
      * Always creates SVG to avoid ImageMagick issues with PNG.
@@ -76,7 +83,6 @@ class Siswa extends Authenticatable
         
         // Log if PNG was requested but SVG was used instead
         if ($format === 'png') {
-            \Log::info("PNG QR code requested for student {$this->id}, using SVG instead to avoid ImageMagick errors");
         }
 
         $directory = storage_path('app/public/qrcodes');

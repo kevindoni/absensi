@@ -117,10 +117,8 @@ class SettingsController extends Controller
 
             DB::commit();
             return redirect()->route('admin.settings.index')->with('success', 'Pengaturan berhasil disimpan');
-            
-        } catch (\Exception $e) {
+              } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Settings update error: ' . $e->getMessage());            
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }

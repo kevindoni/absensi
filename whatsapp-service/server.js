@@ -97,14 +97,24 @@ async function connectToWhatsApp() {
         });
 
         // Save credentials
-        sock.ev.on('creds.update', saveCreds);
-
-        // Handle messages
+        sock.ev.on('creds.update', saveCreds);        // Handle messages
         sock.ev.on('messages.upsert', ({ messages }) => {
             const message = messages[0];
             if (!message.key.fromMe && message.message) {
                 logger.info('Received message:', message);
                 // Bisa diteruskan ke Laravel jika perlu
+            }
+        });
+
+        // Handle message delivery updates
+        sock.ev.on('messages.update', (messages) => {
+            for (const message of messages) {
+                logger.info('Message update:', {
+                    messageId: message.key.id,
+                    status: message.update?.status,
+                    participant: message.key.participant || message.key.remoteJid,
+                    timestamp: new Date().toISOString()
+                });
             }
         });
 

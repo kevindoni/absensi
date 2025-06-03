@@ -12,7 +12,6 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class QrController extends Controller
@@ -316,12 +315,19 @@ class QrController extends Controller
           $now = now();
         $currentDay = $now->dayOfWeekIso;
         $currentTime = $now->format('H:i:s');
-        
-        // Find any schedule for today's class, not just active ones
-        // Students should be able to attend even if very late
-        $jadwal = JadwalMengajar::where('hari', $currentDay)
+          // Find the most appropriate schedule for today's class based on current time
+        // Priority: 1. Current ongoing class, 2. Next upcoming class, 3. Closest class that's finished
+        $allJadwalToday = JadwalMengajar::where('hari', $currentDay)
             ->where('kelas_id', $siswa->kelas_id)
-            ->first();              if (!$jadwal) {
+            ->orderBy('jam_mulai')
+            ->get();
+            
+        if ($allJadwalToday->isEmpty()) {
+            $jadwal = null;
+        } else {
+            // Find the best matching schedule based on current time
+            $jadwal = $this->findBestScheduleMatch($allJadwalToday, $currentTime);
+        }if (!$jadwal) {
             // In development/testing mode, allow QR validation even without schedules
             if (config('app.env') === 'local' || config('app.env') === 'development' || config('app.debug', false)) {
                 return [
@@ -870,5 +876,70 @@ class QrController extends Controller
             'valid' => true,
             'message' => 'QR Code valid'
         ];
+    }
+    
+    /**
+     * Find the best matching schedule based on current time
+     * Priority: 1. Current ongoing class, 2. Next upcoming class, 3. Most recently finished class
+     */
+    private function findBestScheduleMatch($allJadwalToday, $currentTime)
+    {
+        if ($allJadwalToday->isEmpty()) {
+            return null;
+        }
+        
+        $currentTimeCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $currentTime);
+        $ongoingClasses = [];
+        $upcomingClasses = [];
+        $finishedClasses = [];
+        
+        foreach ($allJadwalToday as $jadwal) {
+            $jamMulai = \Carbon\Carbon::createFromFormat('H:i:s', $jadwal->jam_mulai);
+            $jamSelesai = \Carbon\Carbon::createFromFormat('H:i:s', $jadwal->jam_selesai);
+            
+            // Check if current time is within class duration (ongoing class)
+            if ($currentTimeCarbon->between($jamMulai, $jamSelesai)) {
+                $ongoingClasses[] = $jadwal;
+            }            // Check if class hasn't started yet (upcoming class)
+            elseif ($currentTimeCarbon->lt($jamMulai)) {
+                $upcomingClasses[] = [
+                    'jadwal' => $jadwal,
+                    'time_diff' => $currentTimeCarbon->diffInMinutes($jamMulai)  // Fixed: current to start
+                ];
+            }
+            // Class has finished (finished class)
+            else {
+                $finishedClasses[] = [
+                    'jadwal' => $jadwal,
+                    'time_diff' => $jamSelesai->diffInMinutes($currentTimeCarbon)  // Fixed: end to current
+                ];
+            }
+        }
+        
+        // Priority 1: Return any ongoing class (prefer the first one if multiple)
+        if (!empty($ongoingClasses)) {
+            return $ongoingClasses[0];
+        }
+        
+        // Priority 2: Return the closest upcoming class
+        if (!empty($upcomingClasses)) {
+            // Sort by time difference (closest first)
+            usort($upcomingClasses, function($a, $b) {
+                return $a['time_diff'] <=> $b['time_diff'];
+            });
+            return $upcomingClasses[0]['jadwal'];
+        }
+        
+        // Priority 3: Return the most recently finished class
+        if (!empty($finishedClasses)) {
+            // Sort by time difference (most recent first = smallest time difference)
+            usort($finishedClasses, function($a, $b) {
+                return $a['time_diff'] <=> $b['time_diff'];
+            });
+            return $finishedClasses[0]['jadwal'];
+        }
+        
+        // Fallback: return the first schedule if no logic matches
+        return $allJadwalToday->first();
     }
 }

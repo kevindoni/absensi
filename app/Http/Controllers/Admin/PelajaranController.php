@@ -77,28 +77,13 @@ class PelajaranController extends Controller
             Excel::import($import, $request->file('file'));
             
             $endTime = microtime(true);
-            $executionTime = round($endTime - $startTime, 2);
-
-            \Log::info('Subject import completed successfully', [
-                'execution_time' => $executionTime,
-                'records_processed' => $import->getRowCount(),
-                'errors' => $import->failures ? count($import->failures) : 0
-            ]);
-
-            $successMessage = sprintf(
+            $executionTime = round($endTime - $startTime, 2);            $successMessage = sprintf(
                 'Import berhasil! %d mata pelajaran telah ditambahkan dalam %.2f detik.', 
                 $import->getRowCount(), 
                 $executionTime
             );
 
-            return redirect()->route('admin.pelajaran.index')->with('success', $successMessage);
-
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            \Log::error('Validation error during import', [
-                'failures' => $e->failures(),
-                'error_count' => count($e->failures())
-            ]);
-            
+            return redirect()->route('admin.pelajaran.index')->with('success', $successMessage);        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $errors = collect($e->failures())
                 ->map(function($failure) {
                     return "Baris {$failure->row()}: {$failure->errors()[0]}";
@@ -107,14 +92,7 @@ class PelajaranController extends Controller
             
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan validasi pada data import:')
-                ->with('validation_errors', $errors);
-
-        } catch (\Exception $e) {
-            \Log::error('Error during subject import', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+                ->with('validation_errors', $errors);        } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
         }

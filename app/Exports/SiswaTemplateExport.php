@@ -15,7 +15,6 @@ class SiswaTemplateExport implements FromCollection, WithHeadings, WithTitle, Wi
 {
     public function collection()
     {
-        \Log::info('Generating student import template');
         return collect([
             // Example data
             [

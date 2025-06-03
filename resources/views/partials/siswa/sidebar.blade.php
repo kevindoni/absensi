@@ -42,9 +42,7 @@
             <i class="fas fa-fw fa-calendar-check"></i>
             <span>Pengajuan Izin</span>
         </a>
-    </li>
-
-    <!-- Nav Item - QR Code -->
+    </li>    <!-- Nav Item - QR Code -->
     <li class="nav-item {{ request()->routeIs('siswa.qrcode.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('siswa.qrcode') }}">
             <i class="fas fa-fw fa-qrcode"></i>

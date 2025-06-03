@@ -145,113 +145,367 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="row">
+    </div>    <!-- Test Functions Row -->
+    <div class="row mb-4">
         <!-- Test Message Card -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-paper-plane"></i> Test Pesan
+        <div class="col-lg-6">
+            <div class="card shadow border-left-success">
+                <div class="card-header py-3 bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-paper-plane"></i> Test Pesan Individual
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
                         <label for="test-phone">Nomor Tujuan:</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="test-phone" placeholder="628123456789">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+62</span>
+                            </div>
+                            <input type="text" class="form-control" id="test-phone" placeholder="8123456789">
                             <div class="input-group-append">
                                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">
-                                    Pilih Nomor
+                                    <i class="fas fa-users"></i>
                                 </button>
                                 <div class="dropdown-menu">
-                                    <h6 class="dropdown-header">Admin Numbers</h6>
+                                    <h6 class="dropdown-header">Admin</h6>
                                     @foreach($adminNumbers as $number)
-                                        <a class="dropdown-item" href="#" onclick="document.getElementById('test-phone').value='{{ $number }}'">{{ $number }}</a>
+                                        <a class="dropdown-item" href="#" onclick="setPhoneNumber('{{ $number }}')">{{ $number }}</a>
                                     @endforeach
                                     @if(count($parentNumbers) > 0)
                                         <div class="dropdown-divider"></div>
-                                        <h6 class="dropdown-header">Parent Numbers</h6>
-                                        @foreach($parentNumbers as $number)
-                                            <a class="dropdown-item" href="#" onclick="document.getElementById('test-phone').value='{{ $number }}'">{{ $number }}</a>
+                                        <h6 class="dropdown-header">Orang Tua</h6>
+                                        @foreach(array_slice($parentNumbers, 0, 5) as $number)
+                                            <a class="dropdown-item" href="#" onclick="setPhoneNumber('{{ $number }}')">{{ $number }}</a>
                                         @endforeach
+                                        @if(count($parentNumbers) > 5)
+                                            <div class="dropdown-divider"></div>
+                                            <small class="dropdown-item-text text-muted">... dan {{ count($parentNumbers) - 5 }} nomor lainnya</small>
+                                        @endif
                                     @endif
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        <small class="form-text text-muted">Masukkan nomor tanpa kode negara (+62)</small>
+                    </div>                    
                     <div class="form-group">
-                        <label for="test-message">Pesan:</label>
-                        <textarea class="form-control" id="test-message" rows="3" placeholder="Ini adalah pesan test dari sistem absensi">Halo, ini adalah pesan test dari sistem absensi. Sistem WhatsApp berfungsi dengan baik! 🚀</textarea>
+                        <label for="test-message">Pesan Test:</label>
+                        <textarea class="form-control" id="test-message" rows="3" placeholder="Ketik pesan test...">✅ Test koneksi WhatsApp dari {{ config('app.name', 'Sistem Absensi') }}
+
+Sistem WhatsApp berfungsi dengan baik! 🚀
+
+Waktu: {{ date('d/m/Y H:i') }}</textarea>
                     </div>
-                    <button class="btn btn-success" onclick="sendTestMessage()">
+                    <button class="btn btn-success btn-block" onclick="sendTestMessage()">
                         <i class="fas fa-paper-plane"></i> Kirim Test Pesan
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Test Notification Card -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">
-                        <i class="fas fa-bell"></i> Test Notifikasi Massal
+        <!-- Connection Test Card -->
+        <div class="col-lg-6">
+            <div class="card shadow border-left-info">
+                <div class="card-header py-3 bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-heartbeat"></i> Test Koneksi System
                     </h6>
                 </div>
-                <div class="card-body">                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Perhatian:</strong> Notifikasi akan dikirim ke semua nomor admin dan orang tua.
-                        Total penerima: <span id="total-recipients">{{ count($allNumbers) }}</span> nomor.
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Status System:</strong> Test koneksi dan ketersediaan service WhatsApp
                     </div>
-                    <div class="form-group">
-                        <label for="test-notification-message">Pesan Notifikasi:</label>
-                        <textarea class="form-control" id="test-notification-message" rows="3">📢 Test Notifikasi Sistem
-
-Ini adalah test notifikasi dari sistem absensi sekolah. Semua fitur WhatsApp berfungsi dengan baik!
-
-Terima kasih. 🎓</textarea>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Total Nomor Terdaftar:</small>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border rounded p-2">
+                                    <div class="h5 mb-0 text-success">{{ count($adminNumbers) }}</div>
+                                    <small>Admin</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border rounded p-2">
+                                    <div class="h5 mb-0 text-primary">{{ count($parentNumbers) }}</div>
+                                    <small>Orang Tua</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn btn-warning" onclick="sendTestNotification()">
-                        <i class="fas fa-bell"></i> Kirim Test Notifikasi Massal
+                    
+                    <button class="btn btn-info btn-block" onclick="testSystemHealth()">
+                        <i class="fas fa-heartbeat"></i> Test Kesehatan System
+                    </button>
+                    <button class="btn btn-outline-warning btn-block mt-2" onclick="sendTestNotification()">
+                        <i class="fas fa-broadcast-tower"></i> Test Broadcast ke Admin
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Message Templates Card -->
-    <div class="row">
+    <!-- Test Attendance Notification Row -->
+    <div class="row mb-4">
         <div class="col-lg-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-edit"></i> Template Pesan Notifikasi
+            <div class="card shadow border-left-warning">
+                <div class="card-header py-3 bg-warning text-dark">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-user-graduate"></i> Test Notifikasi Kehadiran ke Orang Tua
                     </h6>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Perhatian:</strong> Fitur ini akan mengirim notifikasi WhatsApp sesungguhnya ke nomor orang tua yang dipilih. 
+                        Pastikan template sudah sesuai sebelum melakukan test.
+                    </div>
+
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="clock-in-template">Template Absen Masuk:</label>
-                            <textarea class="form-control" id="clock-in-template" rows="3">{{ $messageTemplates['clock_in'] ?? '🟢 *{name}* telah absen masuk pada {time}\n📍 Lokasi: {location}' }}</textarea>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="test-siswa">Pilih Siswa untuk Test:</label>
+                                <select class="form-control" id="test-siswa">
+                                    <option value="">-- Pilih Siswa --</option>
+                                    @foreach(\App\Models\Siswa::with('orangtua', 'kelas')->whereHas('orangtua', function($q) { $q->whereNotNull('no_telp')->where('no_telp', '!=', ''); })->limit(20)->get() as $siswa)
+                                        <option value="{{ $siswa->id }}" 
+                                                data-parent="{{ $siswa->orangtua->no_telp ?? '' }}" 
+                                                data-kelas="{{ $siswa->kelas->nama_kelas ?? '' }}"
+                                                data-nama="{{ $siswa->nama_lengkap }}">
+                                            {{ $siswa->nama_lengkap }} - {{ $siswa->kelas->nama_kelas ?? 'No Class' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted" id="parent-phone-info"></small>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="clock-out-template">Template Absen Keluar:</label>
-                            <textarea class="form-control" id="clock-out-template" rows="3">{{ $messageTemplates['clock_out'] ?? '🔴 *{name}* telah absen keluar pada {time}\n📍 Lokasi: {location}' }}</textarea>
+                        
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="test-template">Template Notifikasi:</label>
+                                <select class="form-control" id="test-template">
+                                    <option value="check_in">🟢 Hadir</option>
+                                    <option value="late">⚠️ Terlambat</option>
+                                    <option value="absent">❌ Tidak Hadir</option>
+                                    <option value="sick">🏥 Sakit</option>
+                                    <option value="permission">📄 Izin</option>
+                                    <option value="check_out">🔴 Pulang</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="late-template">Template Terlambat:</label>
-                            <textarea class="form-control" id="late-template" rows="3">{{ $messageTemplates['late'] ?? '⚠️ *{name}* terlambat masuk pada {time}\n⏰ Keterlambatan: {late_duration}' }}</textarea>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="absent-template">Template Tidak Hadir:</label>
-                            <textarea class="form-control" id="absent-template" rows="3">{{ $messageTemplates['absent'] ?? '❌ *{name}* tidak hadir hari ini\n📅 Tanggal: {date}' }}</textarea>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="test-keterangan">Keterangan Test:</label>
+                                <input type="text" class="form-control" id="test-keterangan" value="Test notifikasi dari sistem">
+                                <small class="text-muted">Keterangan ini akan muncul di pesan</small>
+                            </div>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="updateTemplates()">
-                        <i class="fas fa-save"></i> Simpan Template
-                    </button>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="preview-notification" class="border rounded p-3 bg-light" style="display: none;">
+                                <h6><i class="fas fa-eye"></i> Preview Pesan:</h6>
+                                <div id="preview-content" class="text-monospace small"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <button class="btn btn-outline-info btn-lg" onclick="previewAttendanceNotification()">
+                                    <i class="fas fa-eye"></i> Preview Pesan
+                                </button>
+                                <button class="btn btn-warning btn-lg ml-2" onclick="sendTestAttendanceNotification()">
+                                    <i class="fas fa-bell"></i> Kirim Test ke Orang Tua
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Pesan Attendance Card -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow border-left-primary">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit"></i> Template Notifikasi Kehadiran Siswa
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Penting:</strong> Template ini digunakan untuk notifikasi otomatis kepada orang tua saat siswa absen.
+                        Gunakan variabel seperti <code>{nama_siswa}</code>, <code>{kelas}</code>, <code>{tanggal}</code>, <code>{status}</code>, dll.
+                    </div>
+
+                    <form id="attendance-templates-form">
+                        <div class="row">
+                            <!-- Template Hadir -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <strong>✅ Template Hadir</strong>
+                                    </div>
+                                    <div class="card-body">                                        <textarea class="form-control" name="check_in" rows="6" placeholder="Template untuk siswa hadir...">{{ \App\Models\Setting::getSetting('whatsapp_template_check_in', '🟢 Notifikasi Kehadiran dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+✅ *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Terima kasih atas perhatiannya.') }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Template Terlambat -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <strong>⚠️ Template Terlambat</strong>
+                                    </div>
+                                    <div class="card-body">                                        <textarea class="form-control" name="late" rows="6" placeholder="Template untuk siswa terlambat...">{{ \App\Models\Setting::getSetting('whatsapp_template_late', '⚠️ Notifikasi Keterlambatan dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+⏰ *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Mohon perhatian untuk kedisiplinan anak.') }}</textarea>
+📝 *Keterangan*: {keterangan}
+
+Mohon perhatian untuk kedisiplinan anak.') }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Template Tidak Hadir -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-danger">
+                                    <div class="card-header bg-danger text-white">
+                                        <strong>❌ Template Tidak Hadir (Alpha)</strong>
+                                    </div>
+                                    <div class="card-body">                                        <textarea class="form-control" name="absent" rows="6" placeholder="Template untuk siswa tidak hadir...">{{ \App\Models\Setting::getSetting('whatsapp_template_absent', '❌ Notifikasi Ketidakhadiran dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+❌ *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Mohon konfirmasi mengenai ketidakhadiran anak.') }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Template Sakit -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <strong>🏥 Template Sakit</strong>
+                                    </div>
+                                    <div class="card-body">                                        <textarea class="form-control" name="sick" rows="6" placeholder="Template untuk siswa sakit...">{{ \App\Models\Setting::getSetting('whatsapp_template_sick', '🏥 Notifikasi Sakit dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🏥 *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Semoga lekas sembuh.') }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Template Izin -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-secondary">
+                                    <div class="card-header bg-secondary text-white">
+                                        <strong>📄 Template Izin</strong>
+                                    </div>
+                                    <div class="card-body">                                        <textarea class="form-control" name="permission" rows="6" placeholder="Template untuk siswa izin...">{{ \App\Models\Setting::getSetting('whatsapp_template_permission', '📄 Notifikasi Izin dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+📄 *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Terima kasih atas pemberitahuannya.') }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Template Check Out -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card border-dark">
+                                    <div class="card-header bg-dark text-white">
+                                        <strong>🔴 Template Pulang</strong>
+                                    </div>
+                                    <div class="card-body">                                        <textarea class="form-control" name="check_out" rows="6" placeholder="Template untuk siswa pulang...">{{ \App\Models\Setting::getSetting('whatsapp_template_check_out', '🔴 Notifikasi Pulang dari {school_name}
+
+👤 *Nama*: {nama_siswa}
+🏫 *Kelas*: {kelas}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+🔴 *Status*: {status}
+📝 *Keterangan*: {keterangan}
+
+Anak telah pulang dengan selamat.') }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="updateAttendanceTemplates()">
+                                <i class="fas fa-save"></i> Simpan Template Kehadiran
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-lg ml-2" onclick="resetTemplatesToDefault()">
+                                <i class="fas fa-undo"></i> Reset ke Default
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Variabel yang tersedia -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <strong><i class="fas fa-info-circle"></i> Variabel Yang Tersedia</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li><code>{school_name}</code> - Nama sekolah</li>
+                                                <li><code>{nama_siswa}</code> - Nama lengkap siswa</li>
+                                                <li><code>{kelas}</code> - Kelas siswa</li>
+                                                <li><code>{tanggal}</code> - Tanggal absensi</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li><code>{waktu}</code> - Waktu absensi</li>
+                                                <li><code>{status}</code> - Status kehadiran</li>
+                                                <li><code>{keterangan}</code> - Keterangan tambahan</li>
+                                                <li><code>{mata_pelajaran}</code> - Mata pelajaran</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -267,6 +521,18 @@ console.log('WhatsApp admin scripts loaded successfully');
 $(document).ready(function() {
     // Auto refresh status every 30 seconds
     setInterval(refreshStatus, 30000);
+    
+    // Handle siswa selection change
+    $('#test-siswa').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const parentPhone = selectedOption.data('parent');
+        
+        if (parentPhone) {
+            $('#parent-phone-info').text(`Nomor Orang Tua: ${parentPhone}`).removeClass('text-muted').addClass('text-success');
+        } else {
+            $('#parent-phone-info').text('').removeClass('text-success').addClass('text-muted');
+        }
+    });
 });
 
 function showLoading() {
@@ -495,13 +761,122 @@ function updateTemplates() {
         });
 }
 
-function sendTestMessage() {
-    const phoneNumber = $('#test-phone').val();
-    const message = $('#test-message').val();
+// Set phone number from dropdown
+function setPhoneNumber(phoneNumber) {
+    // Remove the +62 prefix if present since we have +62 in the input group
+    const cleanNumber = phoneNumber.replace(/^\+?62/, '');
+    $('#test-phone').val(cleanNumber);
+}
+
+// Test system health and connectivity
+function testSystemHealth() {
+    showLoading();
     
-    if (!phoneNumber.trim() || !message.trim()) {
+    $.get('/admin/whatsapp/system-health')
+        .done(function(response) {
+            hideLoading();
+            if (response.success) {
+                let statusHtml = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> Hasil Test Kesehatan System</h6>
+                        <ul class="mb-0">
+                            <li>Koneksi WhatsApp: ${response.data.whatsapp_connected ? '✅ Terhubung' : '❌ Tidak Terhubung'}</li>
+                            <li>Gateway Status: ${response.data.gateway_status ? '✅ Online' : '❌ Offline'}</li>
+                            <li>Database: ${response.data.database_connected ? '✅ Terhubung' : '❌ Error'}</li>
+                            <li>Total Admin: ${response.data.admin_count} nomor</li>
+                            <li>Total Orang Tua: ${response.data.parent_count} nomor</li>
+                        </ul>
+                    </div>
+                `;
+                
+                // Show the result in a modal or alert
+                showAlert('info', statusHtml);
+            } else {
+                showAlert('danger', response.message || 'Test kesehatan system gagal');
+            }
+        })
+        .fail(function(xhr) {
+            hideLoading();
+            showAlert('danger', 'Gagal melakukan test kesehatan system: ' + (xhr.responseJSON?.message || 'Network error'));
+        });
+}
+
+// Update attendance templates
+function updateAttendanceTemplates() {
+    const templates = {
+        check_in: $('textarea[name="check_in"]').val(),
+        late: $('textarea[name="late"]').val(),
+        absent: $('textarea[name="absent"]').val(),
+        sick: $('textarea[name="sick"]').val(),
+        permission: $('textarea[name="permission"]').val(),
+        check_out: $('textarea[name="check_out"]').val(),
+        _token: '{{ csrf_token() }}'
+    };
+    
+    showLoading();
+    
+    $.post('/admin/whatsapp/attendance-templates', templates)
+        .done(function(response) {
+            hideLoading();
+            if (response.success) {
+                showAlert('success', 'Template notifikasi kehadiran berhasil disimpan!');
+            } else {
+                showAlert('danger', response.message || 'Gagal menyimpan template');
+            }
+        })
+        .fail(function(xhr) {
+            hideLoading();
+            showAlert('danger', 'Gagal menyimpan template: ' + (xhr.responseJSON?.message || 'Network error'));
+        });
+}
+
+// Reset templates to default
+function resetTemplatesToDefault() {
+    if (confirm('Apakah Anda yakin ingin mereset semua template ke pengaturan default? Perubahan yang belum disimpan akan hilang.')) {
+        showLoading();
+        
+        $.post('/admin/whatsapp/reset-templates', {
+            _token: '{{ csrf_token() }}'
+        })
+        .done(function(response) {
+            hideLoading();
+            if (response.success) {
+                // Reload the page to show default templates
+                showAlert('success', 'Template berhasil direset ke default. Halaman akan dimuat ulang...');
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                showAlert('danger', response.message || 'Gagal mereset template');
+            }
+        })
+        .fail(function(xhr) {
+            hideLoading();
+            showAlert('danger', 'Gagal mereset template: ' + (xhr.responseJSON?.message || 'Network error'));
+        });
+    }
+}
+
+// Enhanced sendTestMessage with better phone formatting
+function sendTestMessage() {
+    let phoneNumber = $('#test-phone').val().trim();
+    const message = $('#test-message').val().trim();
+    
+    if (!phoneNumber || !message) {
         showAlert('warning', 'Nomor tujuan dan pesan harus diisi');
         return;
+    }
+    
+    // Format phone number properly
+    phoneNumber = phoneNumber.replace(/[^\d]/g, ''); // Remove non-digits
+    
+    // Add +62 prefix if not present
+    if (!phoneNumber.startsWith('62')) {
+        if (phoneNumber.startsWith('0')) {
+            phoneNumber = '62' + phoneNumber.substring(1);
+        } else if (phoneNumber.startsWith('8')) {
+            phoneNumber = '62' + phoneNumber;
+        }
     }
     
     showLoading();
@@ -514,18 +889,23 @@ function sendTestMessage() {
     .done(function(response) {
         hideLoading();
         if (response.success) {
-            showAlert('success', response.message);
+            showAlert('success', `Pesan berhasil dikirim ke +${phoneNumber}!`);
         } else {
-            showAlert('danger', response.message);
+            showAlert('danger', response.message || 'Gagal mengirim pesan');
         }
     })
-    .fail(function() {
+    .fail(function(xhr) {
         hideLoading();
-        showAlert('danger', 'Gagal mengirim pesan test');
+        showAlert('danger', 'Gagal mengirim pesan test: ' + (xhr.responseJSON?.message || 'Network error'));
     });
 }
 
+// Send test notification to admins
 function sendTestNotification() {
+    if (!confirm('Kirim test notifikasi ke semua admin WhatsApp?')) {
+        return;
+    }
+    
     showLoading();
     
     $.post('/admin/whatsapp/test-notification', {
@@ -534,15 +914,191 @@ function sendTestNotification() {
     .done(function(response) {
         hideLoading();
         if (response.success) {
-            showAlert('success', response.message);
+            showAlert('success', response.message || 'Test notifikasi berhasil dikirim ke admin!');
         } else {
-            showAlert('danger', response.message);
+            showAlert('danger', response.message || 'Gagal mengirim test notifikasi');
         }
     })
-    .fail(function() {
+    .fail(function(xhr) {
         hideLoading();
-        showAlert('danger', 'Gagal mengirim test notifikasi');
+        showAlert('danger', 'Gagal mengirim test notifikasi: ' + (xhr.responseJSON?.message || 'Network error'));
     });
+}
+
+// Preview attendance notification
+function previewAttendanceNotification() {
+    const siswaId = $('#test-siswa').val();
+    const templateType = $('#test-template').val();
+    const keterangan = $('#test-keterangan').val().trim();
+    
+    if (!siswaId || !templateType) {
+        showAlert('warning', 'Pilih siswa dan template notifikasi terlebih dahulu');
+        return;
+    }
+    
+    const siswa = $('#test-siswa option:selected');
+    const namaSiswa = siswa.data('nama');
+    const kelasSiswa = siswa.data('kelas');
+    const parentPhone = siswa.data('parent');
+    
+    let message = '';
+    switch (templateType) {
+        case 'check_in':
+            message = `🟢 Notifikasi Kehadiran dari {school_name}
+
+👤 *Nama*: ${namaSiswa}
+🏫 *Kelas*: ${kelasSiswa}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+📚 *Mata Pelajaran*: {mata_pelajaran}
+🕐 *Jam Ke*: {jam_ke} ({jam_mulai}-{jam_selesai})
+✅ *Status*: Hadir
+📝 *Keterangan*: ${keterangan}
+
+Terima kasih atas perhatiannya.`;
+            break;
+        case 'late':
+            message = `⚠️ Notifikasi Keterlambatan dari {school_name}
+
+👤 *Nama*: ${namaSiswa}
+🏫 *Kelas*: ${kelasSiswa}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+📚 *Mata Pelajaran*: {mata_pelajaran}
+🕐 *Jam Ke*: {jam_ke} ({jam_mulai}-{jam_selesai})
+⏰ *Status*: Terlambat
+📝 *Keterangan*: ${keterangan}
+
+Mohon perhatian untuk kedisiplinan anak.`;
+            break;
+        case 'absent':
+            message = `❌ Notifikasi Ketidakhadiran dari {school_name}
+
+👤 *Nama*: ${namaSiswa}
+🏫 *Kelas*: ${kelasSiswa}
+📅 *Tanggal*: {tanggal}
+📚 *Mata Pelajaran*: {mata_pelajaran}
+🕐 *Jam Ke*: {jam_ke} ({jam_mulai}-{jam_selesai})
+❌ *Status*: Tidak Hadir
+📝 *Keterangan*: ${keterangan}
+
+Mohon konfirmasi mengenai ketidakhadiran anak.`;
+            break;
+        case 'sick':
+            message = `🏥 Notifikasi Sakit dari {school_name}
+
+👤 *Nama*: ${namaSiswa}
+🏫 *Kelas*: ${kelasSiswa}
+📅 *Tanggal*: {tanggal}
+🏥 *Status*: Sakit
+📝 *Keterangan*: ${keterangan}
+
+Semoga lekas sembuh.`;
+            break;
+        case 'permission':
+            message = `📄 Notifikasi Izin dari {school_name}
+
+👤 *Nama*: ${namaSiswa}
+🏫 *Kelas*: ${kelasSiswa}
+📅 *Tanggal*: {tanggal}
+📄 *Status*: Izin
+📝 *Keterangan*: ${keterangan}
+
+Terima kasih atas pemberitahuannya.`;
+            break;
+        case 'check_out':
+            message = `🔴 Notifikasi Pulang dari {school_name}
+
+👤 *Nama*: ${namaSiswa}
+🏫 *Kelas*: ${kelasSiswa}
+📅 *Tanggal*: {tanggal}
+🕐 *Waktu*: {waktu}
+🔴 *Status*: Pulang
+📝 *Keterangan*: ${keterangan}
+
+Anak telah pulang dengan selamat.`;
+            break;
+        default:
+            message = 'Template not recognized';
+    }
+      // Replace placeholders with actual values
+    const currentDate = new Date().toLocaleDateString('id-ID');
+    const currentTime = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+    const schoolName = '{{ config("app.name", "Sistem Absensi") }}';
+    
+    message = message
+        .replace('{school_name}', schoolName)
+        .replace('{tanggal}', currentDate)
+        .replace('{waktu}', currentTime);
+    
+    // Show preview with additional info
+    const previewHtml = `
+        <div class="mb-2">
+            <strong>Kepada:</strong> ${parentPhone}<br>
+            <strong>Siswa:</strong> ${namaSiswa} (${kelasSiswa})<br>
+            <strong>Template:</strong> ${templateType.toUpperCase()}
+        </div>
+        <div class="border-top pt-2">
+            <pre style="white-space: pre-wrap; font-family: inherit;">${message}</pre>
+        </div>
+    `;
+    
+    $('#preview-content').html(previewHtml);
+    $('#preview-notification').show();
+}
+
+// Send test attendance notification
+function sendTestAttendanceNotification() {
+    const siswaId = $('#test-siswa').val();
+    const templateType = $('#test-template').val();
+    const keterangan = $('#test-keterangan').val().trim();
+    
+    if (!siswaId || !templateType) {
+        showAlert('warning', 'Pilih siswa dan template notifikasi terlebih dahulu');
+        return;
+    }
+    
+    const siswa = $('#test-siswa option:selected');
+    const parentPhone = siswa.data('parent');
+    const siswaName = siswa.data('nama');
+    
+    if (!parentPhone) {
+        showAlert('warning', 'Nomor orang tua tidak ditemukan untuk siswa ini');
+        return;
+    }
+    
+    if (confirm(`Anda akan mengirim notifikasi ${templateType} ke nomor ${parentPhone} untuk siswa ${siswaName}. Lanjutkan?`)) {
+        showLoading();
+        
+        $.post('/admin/whatsapp/test-attendance-notification', {
+            siswa_id: siswaId,
+            template_type: templateType,
+            keterangan: keterangan,
+            time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'}),
+            date: new Date().toLocaleDateString('id-ID'),
+            location: 'Sekolah',
+            late_duration: '15 menit',
+            _token: '{{ csrf_token() }}'
+        })
+        .done(function(response) {
+            hideLoading();
+            if (response.success) {
+                showAlert('success', `✅ ${response.message} ke nomor ${parentPhone}!`);
+            } else {
+                showAlert('danger', response.message || 'Gagal mengirim notifikasi kehadiran');
+            }
+        })
+        .fail(function(xhr) {
+            hideLoading();
+            let message = 'Gagal mengirim notifikasi kehadiran';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                message += ': ' + xhr.responseJSON.message;
+            } else if (xhr.status === 0) {
+                message += ': Tidak dapat terhubung ke server';
+            }
+            showAlert('danger', message);
+        });
+    }
 }
 </script>
 @endsection

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Absensi;
 use App\Models\Setting;
 use App\Services\WhatsApp\BaileysWhatsAppService;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AttendanceNotificationService
@@ -18,16 +17,25 @@ class AttendanceNotificationService
     }
 
     /**
-     * Send attendance notification to parent
+     * Send            } else {
+            $phone = '+62' . $phone;
+        }
+        
+        return $phone;e {
+            $phone = '+62' . $phone;
+        }
+        
+        return $phone;ce notification to parent
      */
     public function sendAttendanceNotification(Absensi $absensi)
     {
         try {
             // Check if WhatsApp attendance notifications are enabled
             if (!$this->isAttendanceNotificationEnabled()) {
-                Log::info('Attendance WhatsApp notifications are disabled');
                 return false;
-            }            // Load necessary relationships
+            }
+
+            // Load necessary relationships
             $absensi->load(['siswa.orangtua', 'siswa.kelas', 'jadwal.pelajaran']);
             
             $siswa = $absensi->siswa;
@@ -35,12 +43,6 @@ class AttendanceNotificationService
 
             // Check if parent exists and has phone number
             if (!$orangtua || empty($orangtua->no_telp)) {
-                Log::warning('No parent contact found for attendance notification', [
-                    'siswa_id' => $siswa->id,
-                    'siswa_nama' => $siswa->nama_lengkap,
-                    'has_orangtua' => !is_null($orangtua),
-                    'has_no_telp' => $orangtua ? !empty($orangtua->no_telp) : false
-                ]);
                 return false;
             }
 
@@ -54,38 +56,24 @@ class AttendanceNotificationService
             $result = $this->whatsappService->sendMessage($phoneNumber, $message);
             
             if ($result['success']) {
-                Log::info('Attendance WhatsApp notification sent successfully', [
-                    'siswa_id' => $siswa->id,
-                    'siswa_nama' => $siswa->nama_lengkap,
-                    'orangtua_nama' => $orangtua->nama_lengkap,
-                    'phone_number' => $phoneNumber,
-                    'status' => $absensi->status,
-                    'tanggal' => $absensi->tanggal
-                ]);
                 return true;
             } else {
-                Log::error('Failed to send attendance WhatsApp notification', [
-                    'siswa_id' => $siswa->id,
-                    'error' => $result['message'] ?? 'Unknown error'
-                ]);
                 return false;
             }
 
         } catch (\Exception $e) {
-            Log::error('Exception in sendAttendanceNotification', [
-                'siswa_id' => $absensi->siswa_id ?? 'unknown',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return false;
         }
-    }    /**
+    }
+
+    /**
      * Generate attendance message based on status
-     */    public function generateAttendanceMessage(Absensi $absensi)
+     */
+    public function generateAttendanceMessage(Absensi $absensi)
     {
         $siswa = $absensi->siswa;
         $jadwal = $absensi->jadwal;
-        $mataPelajaran = $jadwal->pelajaran;
+        $mataPelajaran = $jadwal ? $jadwal->pelajaran : null;
         $kelas = $siswa->kelas;
         
         $tanggal = Carbon::parse($absensi->tanggal)->format('d/m/Y');
@@ -98,9 +86,7 @@ class AttendanceNotificationService
         // If template is empty, use default hardcoded message
         if (empty($template)) {
             return $this->generateHardcodedMessage($absensi);
-        }
-        
-        // Prepare variables for template replacement
+        }        // Prepare variables for template replacement
         $variables = [
             'school_name' => Setting::getSetting('school_name', 'Sekolah'),
             'nama_siswa' => $siswa->nama_lengkap,
@@ -109,7 +95,10 @@ class AttendanceNotificationService
             'waktu' => $waktu,
             'status' => $this->getStatusText($absensi->status),
             'keterangan' => $absensi->keterangan ?? 'Tidak ada keterangan',
-            'mata_pelajaran' => $mataPelajaran->nama_pelajaran ?? '-'
+            'mata_pelajaran' => $mataPelajaran->nama_pelajaran ?? '-',
+            'jam_ke' => $jadwal->jam_ke ?? '-',
+            'jam_mulai' => $jadwal ? substr($jadwal->jam_mulai, 0, 5) : '-',
+            'jam_selesai' => $jadwal ? substr($jadwal->jam_selesai, 0, 5) : '-'
         ];
         
         // Replace template variables
@@ -136,18 +125,16 @@ class AttendanceNotificationService
     
     /**
      * Get default template if none exists
-     */
-    private function getDefaultTemplate($status)
-    {
-        $defaults = [
-            'hadir' => 'Halo, {nama_siswa} dari kelas {kelas} telah hadir pada {tanggal} pukul {waktu}. Status: {status}. Keterangan: {keterangan}',
-            'terlambat' => 'Halo, {nama_siswa} dari kelas {kelas} terlambat pada {tanggal} pukul {waktu}. Status: {status}. Keterangan: {keterangan}',
-            'alpha' => 'Halo, {nama_siswa} dari kelas {kelas} tidak hadir pada {tanggal}. Status: {status}. Keterangan: {keterangan}',
-            'izin' => 'Halo, {nama_siswa} dari kelas {kelas} izin pada {tanggal}. Status: {status}. Keterangan: {keterangan}',
-            'sakit' => 'Halo, {nama_siswa} dari kelas {kelas} sakit pada {tanggal}. Status: {status}. Keterangan: {keterangan}'
+     */    private function getDefaultTemplate($status)
+    {        $defaults = [
+            'hadir' => 'Halo, {nama_siswa} dari kelas {kelas} telah hadir pada {tanggal} pukul {waktu}. Jam ke-{jam_ke} mata pelajaran {mata_pelajaran} ({jam_mulai}-{jam_selesai}). Status: {status}. Keterangan: {keterangan}',
+            'terlambat' => 'Halo, {nama_siswa} dari kelas {kelas} terlambat pada {tanggal} pukul {waktu}. Jam ke-{jam_ke} mata pelajaran {mata_pelajaran} ({jam_mulai}-{jam_selesai}). Status: {status}. Keterangan: {keterangan}',
+            'alpha' => 'Halo, {nama_siswa} dari kelas {kelas} tidak hadir pada {tanggal}. Jam ke-{jam_ke} mata pelajaran {mata_pelajaran} ({jam_mulai}-{jam_selesai}). Status: {status}. Keterangan: {keterangan}',
+            'izin' => 'Halo, {nama_siswa} dari kelas {kelas} izin pada {tanggal}. Jam ke-{jam_ke} mata pelajaran {mata_pelajaran} ({jam_mulai}-{jam_selesai}). Status: {status}. Keterangan: {keterangan}',
+            'sakit' => 'Halo, {nama_siswa} dari kelas {kelas} sakit pada {tanggal}. Jam ke-{jam_ke} mata pelajaran {mata_pelajaran} ({jam_mulai}-{jam_selesai}). Status: {status}. Keterangan: {keterangan}'
         ];
         
-        return $defaults[$status] ?? 'Notifikasi kehadiran {nama_siswa} dari {school_name} pada {tanggal} pukul {waktu}. Status: {status}';
+        return $defaults[$status] ?? 'Notifikasi kehadiran {nama_siswa} dari {school_name} pada {tanggal} pukul {waktu}. Jam ke-{jam_ke} mata pelajaran {mata_pelajaran}. Status: {status}';
     }
     
     /**
@@ -189,14 +176,13 @@ class AttendanceNotificationService
         $tanggal = Carbon::parse($absensi->tanggal)->format('d/m/Y');
         $waktu = $absensi->created_at->format('H:i');
         
-        $schoolName = Setting::getSetting('school_name', 'Sekolah');
-        
-        // Base message
+        $schoolName = Setting::getSetting('school_name', 'Sekolah');        // Base message
         $message = "*{$schoolName}*\n";
         $message .= "Notifikasi Kehadiran Siswa\n\n";
         $message .= "👤 *Nama*: {$siswa->nama_lengkap}\n";
         $message .= "🏫 *Kelas*: " . ($kelas->nama_kelas ?? '-') . "\n";
         $message .= "📚 *Mata Pelajaran*: " . ($mataPelajaran->nama_pelajaran ?? '-') . "\n";
+        $message .= "🕐 *Jam Ke*: " . ($jadwal->jam_ke ?? '-') . " (" . ($jadwal ? substr($jadwal->jam_mulai, 0, 5) . '-' . substr($jadwal->jam_selesai, 0, 5) : '-') . ")\n";
         $message .= "📅 *Tanggal*: {$tanggal}\n";
         $message .= "🕐 *Waktu Dicatat*: {$waktu}\n\n";
 
@@ -244,12 +230,17 @@ class AttendanceNotificationService
     }    /**
      * Generate test attendance message for testing purposes
      */
-    public function generateTestAttendanceMessage($siswa, $status, $tanggal)
+    public function generateTestAttendanceMessage($siswa, $status, $tanggal, $jadwal = null)
     {
         $kelas = $siswa->kelas;
         
         $tanggalFormatted = Carbon::parse($tanggal)->format('d/m/Y');
         $waktu = Carbon::now()->format('H:i');
+        
+        // If no jadwal provided, try to get one from the database
+        if (!$jadwal) {
+            $jadwal = \App\Models\JadwalMengajar::with('pelajaran')->first();
+        }
         
         // Get template based on attendance status
         $templateKey = $this->getTemplateKeyByStatus($status);
@@ -257,10 +248,8 @@ class AttendanceNotificationService
         
         // If template is empty, use default hardcoded message
         if (empty($template)) {
-            return $this->generateTestHardcodedMessage($siswa, $status, $tanggal);
-        }
-        
-        // Prepare variables for template replacement
+            return $this->generateTestHardcodedMessage($siswa, $status, $tanggal, $jadwal);
+        }        // Prepare variables for template replacement
         $variables = [
             'school_name' => Setting::getSetting('school_name', 'Sekolah'),
             'nama_siswa' => $siswa->nama_lengkap,
@@ -269,7 +258,10 @@ class AttendanceNotificationService
             'waktu' => $waktu,
             'status' => $this->getStatusText($status),
             'keterangan' => $this->getTestKeterangan($status),
-            'mata_pelajaran' => 'Test Mata Pelajaran'
+            'mata_pelajaran' => $jadwal && $jadwal->pelajaran ? $jadwal->pelajaran->nama_pelajaran : 'Mata Pelajaran Test',
+            'jam_ke' => $jadwal ? $jadwal->jam_ke : '1',
+            'jam_mulai' => $jadwal ? substr($jadwal->jam_mulai, 0, 5) : '08:00',
+            'jam_selesai' => $jadwal ? substr($jadwal->jam_selesai, 0, 5) : '08:45'
         ];
         
         // Replace template variables
@@ -293,25 +285,36 @@ class AttendanceNotificationService
         
         return $testKeterangan[$status] ?? 'Test keterangan';
     }
-    
-    /**
+      /**
      * Generate test hardcoded message as fallback
      */
-    private function generateTestHardcodedMessage($siswa, $status, $tanggal)
+    private function generateTestHardcodedMessage($siswa, $status, $tanggal, $jadwal = null)
     {
         $kelas = $siswa->kelas;
         
         $tanggalFormatted = Carbon::parse($tanggal)->format('d/m/Y');
         $waktu = Carbon::now()->format('H:i');
         
+        // If no jadwal provided, try to get one from the database
+        if (!$jadwal) {
+            $jadwal = \App\Models\JadwalMengajar::with('pelajaran')->first();
+        }
+        
         $schoolName = Setting::getSetting('school_name', 'Sekolah');
+        
+        // Get subject and lesson period info from jadwal
+        $mataPelajaran = $jadwal && $jadwal->pelajaran ? $jadwal->pelajaran->nama_pelajaran : 'Mata Pelajaran Test';
+        $jamKe = $jadwal ? $jadwal->jam_ke : '1';
+        $jamMulai = $jadwal ? substr($jadwal->jam_mulai, 0, 5) : '08:00';
+        $jamSelesai = $jadwal ? substr($jadwal->jam_selesai, 0, 5) : '08:45';
         
         // Base message
         $message = "*{$schoolName}*\n";
         $message .= "Notifikasi Kehadiran Siswa\n\n";
         $message .= "👤 *Nama*: {$siswa->nama_lengkap}\n";
         $message .= "🏫 *Kelas*: " . ($kelas->nama_kelas ?? '-') . "\n";
-        $message .= "📚 *Mata Pelajaran*: Test Mata Pelajaran\n";
+        $message .= "📚 *Mata Pelajaran*: {$mataPelajaran}\n";
+        $message .= "🕐 *Jam Ke*: {$jamKe} ({$jamMulai}-{$jamSelesai})\n";
         $message .= "📅 *Tanggal*: {$tanggalFormatted}\n";
         $message .= "🕐 *Waktu Dicatat*: {$waktu}\n\n";
 
@@ -352,9 +355,7 @@ class AttendanceNotificationService
         $message .= "Pesan otomatis dari sistem absensi sekolah.";
 
         return $message;
-    }
-
-    /**
+    }    /**
      * Format phone number to international format
      */
     private function formatPhoneNumber($phoneNumber)
@@ -362,13 +363,25 @@ class AttendanceNotificationService
         // Remove any non-numeric characters except +
         $phone = preg_replace('/[^0-9+]/', '', $phoneNumber);
         
+        // If already starts with +, return as is
+        if (substr($phone, 0, 1) === '+') {
+            return $phone;
+        }
+        
         // If starts with 0, replace with +62
         if (substr($phone, 0, 1) === '0') {
             $phone = '+62' . substr($phone, 1);
         }
-        
-        // If doesn't start with +, assume Indonesian number
-        if (substr($phone, 0, 1) !== '+') {
+        // If starts with 62, add + prefix
+        elseif (substr($phone, 0, 2) === '62') {
+            $phone = '+' . $phone;
+        }
+        // If starts with 8 (Indonesian mobile without country code), add +62
+        elseif (substr($phone, 0, 1) === '8') {
+            $phone = '+62' . $phone;
+        }
+        // For any other format, assume Indonesian number and add +62
+        else {
             $phone = '+62' . $phone;
         }
         
@@ -401,12 +414,6 @@ class AttendanceNotificationService
             // Add small delay to avoid overwhelming WhatsApp service
             usleep(500000); // 0.5 second delay
         }
-
-        Log::info('Bulk attendance notifications completed', [
-            'total' => count($attendanceRecords),
-            'success' => $successCount,
-            'failed' => $failCount
-        ]);
 
         return [
             'total' => count($attendanceRecords),
