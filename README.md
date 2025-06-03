@@ -1076,7 +1076,9 @@ CREATE INDEX idx_jadwal_hari ON jadwal_mengajar(hari);
 - **PHP**: 8.1+ with OPcache enabled
 - **MySQL**: 8.0+ with optimized settings
 
-**Setup WhatsApp Service**
+
+## **Setup WhatsApp Service**
+
    
    ### A. Instalasi Dependencies
    ```bash
