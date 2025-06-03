@@ -4,7 +4,7 @@
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://php.net)
 
-[![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.s9.) **Setup WhatsApp Service**
+**Setup WhatsApp Service**
    
    ### A. Instalasi Dependencies
    ```bash
